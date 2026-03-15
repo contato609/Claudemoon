@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker Funil Comercial — Digital Moon</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #eeede8;
+    --text-primary: #1a1a18;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.2);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --accent: #378ADD;
+    --green: #1D9E75;
+    --amber: #BA7517;
+    --red: #E24B4A;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1c;
+      --bg-secondary: #2a2a28;
+      --bg-tertiary: #333331;
+      --text-primary: #f0efe8;
+      --text-secondary: #b4b2a9;
+      --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.18);
+    }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .app-header {
+    background: var(--bg-primary);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .app-nav {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+  .nav-btn {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-btn:hover { background: var(--bg-secondary); }
+  .nav-btn.active {
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    font-weight: 500;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+  .card {
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    margin: 1.25rem 0 0.75rem;
+    padding-bottom: 6px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+  @media(max-width: 600px) {
+    .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
+  .field label { font-size: 12px; color: var(--text-secondary); }
+  input[type="number"], input[type="date"] {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  input[type="number"]:focus, input[type="date"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: opacity 0.15s;
+    font-family: inherit;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
+  .mcard {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 12px;
+  }
+  .mcard .lbl {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .mcard .val {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .mcard .sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 3px;
+  }
+  .period-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .ptab {
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 0.5px solid var(--border-md);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .ptab:hover { background: var(--bg-secondary); }
+  .ptab.active {
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    border-color: transparent;
+    font-weight: 500;
+  }
+  .conv-good { color: var(--green); font-weight: 500; }
+  .conv-warn { color: var(--amber); font-weight: 500; }
+  .conv-bad { color: var(--red); font-weight: 500; }
+  .alert {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-success { background: var(--green-bg); color: var(--green-text); }
+  .alert-error { background: var(--red-bg); color: var(--red-text); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid var(--border);
+    color: var(--text-primary);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-secondary); }
+  .del-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+    cursor: pointer;
+    color: var(--red-text);
+    border: 0.5px solid var(--red);
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .del-btn:hover { background: var(--red-bg); }
+  .empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    margin: 1rem 0 0.5rem;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .tbl-wrap { overflow-x: auto; }
+  .page-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+  }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Digital Moon — Funil Comercial
+  </div>
+  <nav class="app-nav">
+    <button class="nav-btn active" onclick="switchTab('input',this)">Registro diário</button>
+    <button class="nav-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
+    <button class="nav-btn" onclick="switchTab('historico',this)">Histórico</button>
+  </nav>
+</header>
+<div class="container">
+  <!-- REGISTRO DIÁRIO -->
+  <div id="page-input" class="page active">
+    <div class="page-title">Registro diário</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Entrada do dia</span>
+        <input type="date" id="entry-date" style="width:auto;font-size:13px;padding:6px 10px;">
+      </div>
+      <div id="alert-box" class="alert"></div>
+      <div class="section-label">Investimento e captação</div>
+      <div class="grid2">
+        <div class="field"><label>Investimento em tráfego (R$)</label><input type="number" id="f-invest" min="0" placeholder="0"></div>
+        <div class="field"><label>Leads gerados</label><input type="number" id="f-leads" min="0" placeholder="0"></div>
+      </div>
+      <div class="section-label">Atividade do SDR</div>
+      <div class="grid2">
+        <div class="field"><label>Ligações realizadas</label><input type="number" id="f-ligas" min="0" placeholder="0"></div>
+        <div class="field"><label>Reuniões agendadas</label><input type="number" id="f-agend" min="0" placeholder="0"></div>
+        <div class="field"><label>Reuniões comparecidas</label><input type="number" id="f-comp" min="0" placeholder="0"></div>
+        <div class="field"><label>Pitchs realizados</label><input type="number" id="f-pitch" min="0" placeholder="0"></div>
+      </div>
+      <div class="section-label">Resultado comercial</div>
+      <div class="grid2">
+        <div class="field"><label>Fechamentos</label><input type="number" id="f-fecha" min="0" placeholder="0"></div>
+        <div class="field"><label>Perdidos (pós-pitch)</label><input type="number" id="f-perd" min="0" placeholder="0"></div>
+      </div>
+      <button class="btn-primary" onclick="saveEntry()">Salvar registro</button>
+    </div>
+  </div>
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page">
+    <div class="page-title">Dashboard</div>
+    <div class="period-tabs">
+      <button class="ptab active" onclick="setPeriod('semana',this)">Semana</button>
+      <button class="ptab" onclick="setPeriod('quinzena',this)">Quinzena</button>
+      <button class="ptab" onclick="setPeriod('mes',this)">Mês</button>
+      <button class="ptab" onclick="setPeriod('tudo',this)">Tudo</button>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+  <!-- HISTÓRICO -->
+  <div id="page-historico" class="page">
+    <div class="page-title">Histórico de registros</div>
+    <div class="card">
+      <div class="tbl-wrap" id="hist-content"></div>
+    </div>
+  </div>
+</div>
+<script>
+let currentPeriod = 'semana';
+let chartInstance = null;
+const DB_KEY = 'dm_funil_v1';
+function loadDB(){
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveDB(db){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+function switchTab(name, el){
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(name==='dashboard') renderDash();
+  if(name==='historico') renderHist();
+}
+function showAlert(msg, type){
+  const el = document.getElementById('alert-box');
+  el.textContent = msg;
+  el.className = 'alert show alert-'+type;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+function saveEntry(){
+  const date = document.getElementById('entry-date').value;
+  if(!date){ showAlert('Selecione uma data.','error'); return; }
+  const entry = {
+    date,
+    invest: parseFloat(document.getElementById('f-invest').value)||0,
+    leads:  parseFloat(document.getElementById('f-leads').value)||0,
+    ligas:  parseFloat(document.getElementById('f-ligas').value)||0,
+    agend:  parseFloat(document.getElementById('f-agend').value)||0,
+    comp:   parseFloat(document.getElementById('f-comp').value)||0,
+    pitch:  parseFloat(document.getElementById('f-pitch').value)||0,
+    fecha:  parseFloat(document.getElementById('f-fecha').value)||0,
+    perd:   parseFloat(document.getElementById('f-perd').value)||0,
+  };
+  const db = loadDB();
+  db[date] = entry;
+  saveDB(db);
+  showAlert('Registro salvo com sucesso!','success');
+  ['f-invest','f-leads','f-ligas','f-agend','f-comp','f-pitch','f-fecha','f-perd']
+    .forEach(id => document.getElementById(id).value = '');
+}
+function deleteEntry(date){
+  if(!confirm('Excluir o registro de '+date+'?')) return;
+  const db = loadDB();
+  delete db[date];
+  saveDB(db);
+  renderHist();
+}
+function filterByPeriod(db, period){
+  const entries = Object.values(db).sort((a,b) => a.date.localeCompare(b.date));
+  if(period==='tudo') return entries;
+  const days = period==='semana'?7:period==='quinzena'?15:30;
+  const cutoff = new Date(Date.now() - days*86400000);
+  return entries.filter(e => new Date(e.date) >= cutoff);
+}
+const sum = (arr, k) => arr.reduce((a,e) => a+(e[k]||0), 0);
+const pct = (a,b) => b ? Math.round((a/b)*100) : null;
+const fmt = n => n===null ? '—' : n+'%';
+const brl = n => 'R$'+Math.round(n).toLocaleString('pt-BR');
+function convColor(n, lo, hi){
+  if(n===null) return '';
+  if(n>=hi) return 'conv-good';
+  if(n>=lo) return 'conv-warn';
+  return 'conv-bad';
+}
+function setPeriod(p, el){
+  currentPeriod = p;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderDash();
+}
+function renderDash(){
+  const db = loadDB();
+  const entries = filterByPeriod(db, currentPeriod);
+  const el = document.getElementById('dash-content');
+  if(!entries.length){
+    el.innerHTML = '<div class="card"><div class="empty">Nenhum registro no período selecionado.<br>Adicione dados na aba "Registro diário".</div></div>';
+    return;
+  }
+  const invest=sum(entries,'invest'), leads=sum(entries,'leads'), ligas=sum(entries,'ligas');
+  const agend=sum(entries,'agend'), comp=sum(entries,'comp'), pitch=sum(entries,'pitch');
+  const fecha=sum(entries,'fecha');
+  const cpl  = leads ? invest/leads : 0;
+  const cpa  = fecha ? invest/fecha : 0;
+  const ltv  = 5250*3;
+  const roi  = cpa ? Math.round(((ltv-cpa)/cpa)*100) : null;
+  const roiColor = roi===null ? 'inherit' : roi>100 ? 'var(--green)' : roi>0 ? 'var(--amber)' : 'var(--red)';
+  const convs = [
+    {lbl:'Lead → ligação',      v:pct(ligas,leads), lo:60, hi:80},
+    {lbl:'Ligação → agend.',    v:pct(agend,ligas), lo:20, hi:35},
+    {lbl:'Agend. → comparec.',  v:pct(comp,agend),  lo:50, hi:70},
+    {lbl:'Comparec. → pitch',   v:pct(pitch,comp),  lo:70, hi:90},
+    {lbl:'Pitch → fechamento',  v:pct(fecha,pitch), lo:15, hi:30},
+    {lbl:'Lead → cliente',      v:pct(fecha,leads), lo:1,  hi:3 },
+  ];
+  el.innerHTML = `
+    <div class="card">
+      <div class="section-label">Visão geral do período</div>
+      <div class="grid4" style="margin-bottom:1rem;">
+        <div class="mcard"><div class="lbl">Investimento</div><div class="val">${brl(invest)}</div></div>
+        <div class="mcard"><div class="lbl">Leads gerados</div><div class="val">${Math.round(leads)}</div></div>
+        <div class="mcard"><div class="lbl">Fechamentos</div><div class="val">${Math.round(fecha)}</div></div>
+        <div class="mcard"><div class="lbl">ROI tráfego</div><div class="val" style="color:${roiColor}">${roi===null?'—':roi+'%'}</div></div>
+      </div>
+      <div class="grid3">
+        <div class="mcard"><div class="lbl">Custo por lead</div><div class="val">${cpl?brl(cpl):'—'}</div></div>
+        <div class="mcard"><div class="lbl">CAC</div><div class="val">${cpa?brl(cpa):'—'}</div><div class="sub">custo por cliente</div></div>
+        <div class="mcard"><div class="lbl">LTV estimado (3m)</div><div class="val">${brl(ltv)}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Conversões por etapa</div>
+      <div class="grid3">
+        ${convs.map(c=>`
+          <div class="mcard">
+            <div class="lbl">${c.lbl}</div>
+            <div class="val ${convColor(c.v,c.lo,c.hi)}">${fmt(c.v)}</div>
+          </div>`).join('')}
+      </div>
+      <p style="font-size:11px;color:var(--text-tertiary);margin-top:.75rem;">
+        Verde = acima do benchmark &nbsp;|&nbsp; Amarelo = atenção &nbsp;|&nbsp; Vermelho = abaixo do esperado
+      </p>
+    </div>
+    <div class="card">
+      <div class="section-label">Evolução diária</div>
+      <div class="chart-wrap"><canvas id="chart-evo"></canvas></div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#85B7EB;"></span>Leads</span>
+        <span><span class="legend-dot" style="background:#1D9E75;"></span>Fechamentos</span>
+      </div>
+    </div>
+  `;
+  if(chartInstance){ chartInstance.destroy(); chartInstance = null; }
+  const labels     = entries.map(e => e.date.slice(5));
+  const dataLeads  = entries.map(e => e.leads);
+  const dataFecha  = entries.map(e => e.fecha);
+  chartInstance = new Chart(document.getElementById('chart-evo'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Leads',       data:dataLeads, backgroundColor:'#85B7EB', borderRadius:3 },
+        { label:'Fechamentos', data:dataFecha, backgroundColor:'#1D9E75', borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display:false } },
+      scales: {
+        x: { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
+        y: { ticks:{ font:{size:11} }, grid:{ color:'rgba(128,128,128,0.1)' } }
+      }
+    }
+  });
+}
+function renderHist(){
+  const db = loadDB();
+  const entries = Object.values(db).sort((a,b) => b.date.localeCompare(a.date));
+  const el = document.getElementById('hist-content');
+  if(!entries.length){
+    el.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece pelo "Registro diário".</div>';
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th><th>Invest.</th><th>Leads</th><th>Ligas</th>
+          <th>Agend.</th><th>Comp.</th><th>Pitch</th>
+          <th style="color:var(--green);">Fecha.</th>
+          <th style="color:var(--red);">Perd.</th>
+          <th>CAC</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(e => {
+          const cac = e.fecha ? brl(e.invest/e.fecha) : '—';
+          return `<tr>
+            <td>${e.date}</td>
+            <td>${brl(e.invest)}</td>
+            <td>${e.leads}</td><td>${e.ligas}</td><td>${e.agend}</td>
+            <td>${e.comp}</td><td>${e.pitch}</td>
+            <td style="color:var(--green);font-weight:500;">${e.fecha}</td>
+            <td style="color:var(--red);">${e.perd}</td>
+            <td>${cac}</td>
+            <td><button class="del-btn" onclick="deleteEntry('${e.date}')">excluir</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+document.getElementById('entry-date').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>

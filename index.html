@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tracker Funil Comercial — Digital Moon</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -174,6 +175,7 @@
   }
   .btn-primary:hover { opacity: 0.88; }
   .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .mcard {
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
@@ -305,6 +307,12 @@
     margin-bottom: 1.5rem;
     color: var(--text-primary);
   }
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
 </style>
 </head>
 <body>
@@ -346,7 +354,7 @@
         <div class="field"><label>Fechamentos</label><input type="number" id="f-fecha" min="0" placeholder="0"></div>
         <div class="field"><label>Perdidos (pós-pitch)</label><input type="number" id="f-perd" min="0" placeholder="0"></div>
       </div>
-      <button class="btn-primary" onclick="saveEntry()">Salvar registro</button>
+      <button class="btn-primary" id="save-btn" onclick="saveEntry()">Salvar registro</button>
     </div>
   </div>
   <!-- DASHBOARD -->
@@ -369,105 +377,152 @@
   </div>
 </div>
 <script>
+// ── Supabase client ──────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(
+  'https://pzwnvuypmwsgnoihkxzq.supabase.co',
+  'sb_publishable_ANMsNc9CpyLAfaQAxh_v0Q_7ZX__vc0'
+);
+
+// ── State ────────────────────────────────────────────────────────────────────
 let currentPeriod = 'semana';
 let chartInstance = null;
-const DB_KEY = 'dm_funil_v1';
-function loadDB(){
-  try { return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }
-  catch(e){ return {}; }
+
+// ── Data layer (Supabase) ────────────────────────────────────────────────────
+async function loadEntries() {
+  const { data, error } = await sb.from('entries').select('*').order('date', { ascending: true });
+  if (error) { console.error('loadEntries:', error); return []; }
+  return data;
 }
-function saveDB(db){
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+async function upsertEntry(entry) {
+  const { error } = await sb.from('entries').upsert(entry, { onConflict: 'date' });
+  return error;
 }
-function switchTab(name, el){
+
+async function removeEntry(date) {
+  const { error } = await sb.from('entries').delete().eq('date', date);
+  return error;
+}
+
+// ── UI helpers ───────────────────────────────────────────────────────────────
+function switchTab(name, el) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  if(name==='dashboard') renderDash();
-  if(name==='historico') renderHist();
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'dashboard') renderDash();
+  if (name === 'historico') renderHist();
 }
-function showAlert(msg, type){
+
+function showAlert(msg, type) {
   const el = document.getElementById('alert-box');
   el.textContent = msg;
-  el.className = 'alert show alert-'+type;
+  el.className = 'alert show alert-' + type;
   setTimeout(() => el.classList.remove('show'), 3000);
 }
-function saveEntry(){
+
+// ── Actions ──────────────────────────────────────────────────────────────────
+async function saveEntry() {
   const date = document.getElementById('entry-date').value;
-  if(!date){ showAlert('Selecione uma data.','error'); return; }
+  if (!date) { showAlert('Selecione uma data.', 'error'); return; }
+
   const entry = {
     date,
-    invest: parseFloat(document.getElementById('f-invest').value)||0,
-    leads:  parseFloat(document.getElementById('f-leads').value)||0,
-    ligas:  parseFloat(document.getElementById('f-ligas').value)||0,
-    agend:  parseFloat(document.getElementById('f-agend').value)||0,
-    comp:   parseFloat(document.getElementById('f-comp').value)||0,
-    pitch:  parseFloat(document.getElementById('f-pitch').value)||0,
-    fecha:  parseFloat(document.getElementById('f-fecha').value)||0,
-    perd:   parseFloat(document.getElementById('f-perd').value)||0,
+    invest: parseFloat(document.getElementById('f-invest').value) || 0,
+    leads:  parseFloat(document.getElementById('f-leads').value)  || 0,
+    ligas:  parseFloat(document.getElementById('f-ligas').value)  || 0,
+    agend:  parseFloat(document.getElementById('f-agend').value)  || 0,
+    comp:   parseFloat(document.getElementById('f-comp').value)   || 0,
+    pitch:  parseFloat(document.getElementById('f-pitch').value)  || 0,
+    fecha:  parseFloat(document.getElementById('f-fecha').value)  || 0,
+    perd:   parseFloat(document.getElementById('f-perd').value)   || 0,
   };
-  const db = loadDB();
-  db[date] = entry;
-  saveDB(db);
-  showAlert('Registro salvo com sucesso!','success');
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+
+  const error = await upsertEntry(entry);
+
+  btn.disabled = false;
+  btn.textContent = 'Salvar registro';
+
+  if (error) {
+    showAlert('Erro ao salvar: ' + error.message, 'error');
+    return;
+  }
+
+  showAlert('Registro salvo com sucesso!', 'success');
   ['f-invest','f-leads','f-ligas','f-agend','f-comp','f-pitch','f-fecha','f-perd']
     .forEach(id => document.getElementById(id).value = '');
 }
-function deleteEntry(date){
-  if(!confirm('Excluir o registro de '+date+'?')) return;
-  const db = loadDB();
-  delete db[date];
-  saveDB(db);
+
+async function deleteEntry(date) {
+  if (!confirm('Excluir o registro de ' + date + '?')) return;
+  const error = await removeEntry(date);
+  if (error) { alert('Erro ao excluir: ' + error.message); return; }
   renderHist();
 }
-function filterByPeriod(db, period){
-  const entries = Object.values(db).sort((a,b) => a.date.localeCompare(b.date));
-  if(period==='tudo') return entries;
-  const days = period==='semana'?7:period==='quinzena'?15:30;
-  const cutoff = new Date(Date.now() - days*86400000);
+
+// ── Calculations ─────────────────────────────────────────────────────────────
+function filterByPeriod(entries, period) {
+  if (period === 'tudo') return entries;
+  const days = period === 'semana' ? 7 : period === 'quinzena' ? 15 : 30;
+  const cutoff = new Date(Date.now() - days * 86400000);
   return entries.filter(e => new Date(e.date) >= cutoff);
 }
-const sum = (arr, k) => arr.reduce((a,e) => a+(e[k]||0), 0);
-const pct = (a,b) => b ? Math.round((a/b)*100) : null;
-const fmt = n => n===null ? '—' : n+'%';
-const brl = n => 'R$'+Math.round(n).toLocaleString('pt-BR');
-function convColor(n, lo, hi){
-  if(n===null) return '';
-  if(n>=hi) return 'conv-good';
-  if(n>=lo) return 'conv-warn';
+
+const sum = (arr, k) => arr.reduce((a, e) => a + (e[k] || 0), 0);
+const pct = (a, b) => b ? Math.round((a / b) * 100) : null;
+const fmt = n => n === null ? '—' : n + '%';
+const brl = n => 'R$' + Math.round(n).toLocaleString('pt-BR');
+
+function convColor(n, lo, hi) {
+  if (n === null) return '';
+  if (n >= hi) return 'conv-good';
+  if (n >= lo) return 'conv-warn';
   return 'conv-bad';
 }
-function setPeriod(p, el){
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function setPeriod(p, el) {
   currentPeriod = p;
   document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderDash();
 }
-function renderDash(){
-  const db = loadDB();
-  const entries = filterByPeriod(db, currentPeriod);
+
+async function renderDash() {
   const el = document.getElementById('dash-content');
-  if(!entries.length){
+  el.innerHTML = '<div class="loading">Carregando…</div>';
+
+  const all = await loadEntries();
+  const entries = filterByPeriod(all, currentPeriod);
+
+  if (!entries.length) {
     el.innerHTML = '<div class="card"><div class="empty">Nenhum registro no período selecionado.<br>Adicione dados na aba "Registro diário".</div></div>';
     return;
   }
-  const invest=sum(entries,'invest'), leads=sum(entries,'leads'), ligas=sum(entries,'ligas');
-  const agend=sum(entries,'agend'), comp=sum(entries,'comp'), pitch=sum(entries,'pitch');
-  const fecha=sum(entries,'fecha');
-  const cpl  = leads ? invest/leads : 0;
-  const cpa  = fecha ? invest/fecha : 0;
-  const ltv  = 5250*3;
-  const roi  = cpa ? Math.round(((ltv-cpa)/cpa)*100) : null;
-  const roiColor = roi===null ? 'inherit' : roi>100 ? 'var(--green)' : roi>0 ? 'var(--amber)' : 'var(--red)';
+
+  const invest = sum(entries,'invest'), leads = sum(entries,'leads'), ligas = sum(entries,'ligas');
+  const agend  = sum(entries,'agend'),  comp  = sum(entries,'comp'),  pitch = sum(entries,'pitch');
+  const fecha  = sum(entries,'fecha');
+  const cpl    = leads ? invest / leads : 0;
+  const cpa    = fecha ? invest / fecha : 0;
+  const ltv    = 5250 * 3;
+  const roi    = cpa ? Math.round(((ltv - cpa) / cpa) * 100) : null;
+  const roiColor = roi === null ? 'inherit' : roi > 100 ? 'var(--green)' : roi > 0 ? 'var(--amber)' : 'var(--red)';
+
   const convs = [
-    {lbl:'Lead → ligação',      v:pct(ligas,leads), lo:60, hi:80},
-    {lbl:'Ligação → agend.',    v:pct(agend,ligas), lo:20, hi:35},
-    {lbl:'Agend. → comparec.',  v:pct(comp,agend),  lo:50, hi:70},
-    {lbl:'Comparec. → pitch',   v:pct(pitch,comp),  lo:70, hi:90},
-    {lbl:'Pitch → fechamento',  v:pct(fecha,pitch), lo:15, hi:30},
-    {lbl:'Lead → cliente',      v:pct(fecha,leads), lo:1,  hi:3 },
+    { lbl:'Lead → ligação',      v:pct(ligas,leads), lo:60, hi:80 },
+    { lbl:'Ligação → agend.',    v:pct(agend,ligas), lo:20, hi:35 },
+    { lbl:'Agend. → comparec.',  v:pct(comp,agend),  lo:50, hi:70 },
+    { lbl:'Comparec. → pitch',   v:pct(pitch,comp),  lo:70, hi:90 },
+    { lbl:'Pitch → fechamento',  v:pct(fecha,pitch), lo:15, hi:30 },
+    { lbl:'Lead → cliente',      v:pct(fecha,leads), lo:1,  hi:3  },
   ];
+
   el.innerHTML = `
     <div class="card">
       <div class="section-label">Visão geral do período</div>
@@ -475,21 +530,21 @@ function renderDash(){
         <div class="mcard"><div class="lbl">Investimento</div><div class="val">${brl(invest)}</div></div>
         <div class="mcard"><div class="lbl">Leads gerados</div><div class="val">${Math.round(leads)}</div></div>
         <div class="mcard"><div class="lbl">Fechamentos</div><div class="val">${Math.round(fecha)}</div></div>
-        <div class="mcard"><div class="lbl">ROI tráfego</div><div class="val" style="color:${roiColor}">${roi===null?'—':roi+'%'}</div></div>
+        <div class="mcard"><div class="lbl">ROI tráfego</div><div class="val" style="color:${roiColor}">${roi === null ? '—' : roi + '%'}</div></div>
       </div>
       <div class="grid3">
-        <div class="mcard"><div class="lbl">Custo por lead</div><div class="val">${cpl?brl(cpl):'—'}</div></div>
-        <div class="mcard"><div class="lbl">CAC</div><div class="val">${cpa?brl(cpa):'—'}</div><div class="sub">custo por cliente</div></div>
+        <div class="mcard"><div class="lbl">Custo por lead</div><div class="val">${cpl ? brl(cpl) : '—'}</div></div>
+        <div class="mcard"><div class="lbl">CAC</div><div class="val">${cpa ? brl(cpa) : '—'}</div><div class="sub">custo por cliente</div></div>
         <div class="mcard"><div class="lbl">LTV estimado (3m)</div><div class="val">${brl(ltv)}</div></div>
       </div>
     </div>
     <div class="card">
       <div class="section-label">Conversões por etapa</div>
       <div class="grid3">
-        ${convs.map(c=>`
+        ${convs.map(c => `
           <div class="mcard">
             <div class="lbl">${c.lbl}</div>
-            <div class="val ${convColor(c.v,c.lo,c.hi)}">${fmt(c.v)}</div>
+            <div class="val ${convColor(c.v, c.lo, c.hi)}">${fmt(c.v)}</div>
           </div>`).join('')}
       </div>
       <p style="font-size:11px;color:var(--text-tertiary);margin-top:.75rem;">
@@ -505,17 +560,15 @@ function renderDash(){
       </div>
     </div>
   `;
-  if(chartInstance){ chartInstance.destroy(); chartInstance = null; }
-  const labels     = entries.map(e => e.date.slice(5));
-  const dataLeads  = entries.map(e => e.leads);
-  const dataFecha  = entries.map(e => e.fecha);
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
   chartInstance = new Chart(document.getElementById('chart-evo'), {
     type: 'bar',
     data: {
-      labels,
+      labels: entries.map(e => e.date.slice(5)),
       datasets: [
-        { label:'Leads',       data:dataLeads, backgroundColor:'#85B7EB', borderRadius:3 },
-        { label:'Fechamentos', data:dataFecha, backgroundColor:'#1D9E75', borderRadius:3 },
+        { label:'Leads',       data: entries.map(e => e.leads), backgroundColor:'#85B7EB', borderRadius:3 },
+        { label:'Fechamentos', data: entries.map(e => e.fecha), backgroundColor:'#1D9E75', borderRadius:3 },
       ]
     },
     options: {
@@ -529,14 +582,19 @@ function renderDash(){
     }
   });
 }
-function renderHist(){
-  const db = loadDB();
-  const entries = Object.values(db).sort((a,b) => b.date.localeCompare(a.date));
+
+async function renderHist() {
   const el = document.getElementById('hist-content');
-  if(!entries.length){
+  el.innerHTML = '<div class="loading">Carregando…</div>';
+
+  const entries = await loadEntries();
+  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+
+  if (!sorted.length) {
     el.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece pelo "Registro diário".</div>';
     return;
   }
+
   el.innerHTML = `
     <table>
       <thead>
@@ -549,8 +607,8 @@ function renderHist(){
         </tr>
       </thead>
       <tbody>
-        ${entries.map(e => {
-          const cac = e.fecha ? brl(e.invest/e.fecha) : '—';
+        ${sorted.map(e => {
+          const cac = e.fecha ? brl(e.invest / e.fecha) : '—';
           return `<tr>
             <td>${e.date}</td>
             <td>${brl(e.invest)}</td>
@@ -565,7 +623,9 @@ function renderHist(){
       </tbody>
     </table>`;
 }
-document.getElementById('entry-date').value = new Date().toISOString().slice(0,10);
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('entry-date').value = new Date().toISOString().slice(0, 10);
 </script>
 </body>
 </html>

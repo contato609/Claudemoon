@@ -30,6 +30,9 @@
     --red-text: #791F1F;
     --blue-bg: #E6F1FB;
     --blue-text: #0C447C;
+    --purple: #7C3AED;
+    --purple-bg: #EDE9FE;
+    --purple-text: #4C1D95;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -81,6 +84,7 @@
     display: flex;
     gap: 4px;
     margin-left: auto;
+    flex-wrap: wrap;
   }
   .nav-btn {
     font-size: 13px;
@@ -98,8 +102,10 @@
     color: var(--blue-text);
     font-weight: 500;
   }
+  .nav-btn.ghl-btn { color: var(--purple); }
+  .nav-btn.ghl-btn.active { background: var(--purple-bg); color: var(--purple-text); }
   .container {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
   }
@@ -139,10 +145,12 @@
   @media(max-width: 600px) {
     .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .app-nav { gap: 2px; }
+    .nav-btn { padding: 5px 10px; font-size: 12px; }
   }
   .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
   .field label { font-size: 12px; color: var(--text-secondary); }
-  input[type="number"], input[type="date"] {
+  input[type="number"], input[type="date"], input[type="text"], input[type="password"] {
     width: 100%;
     padding: 8px 10px;
     font-size: 14px;
@@ -154,7 +162,8 @@
     transition: border-color 0.15s;
     font-family: inherit;
   }
-  input[type="number"]:focus, input[type="date"]:focus {
+  input[type="number"]:focus, input[type="date"]:focus,
+  input[type="text"]:focus, input[type="password"]:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
   }
@@ -174,6 +183,48 @@
   }
   .btn-primary:hover { opacity: 0.88; }
   .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
+  .btn-secondary {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg-tertiary); }
+  .btn-purple {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-purple:hover { opacity: 0.88; }
+  .btn-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--purple-bg);
+    color: var(--purple-text);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .btn-sm:hover { opacity: 0.8; }
   .mcard {
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
@@ -232,6 +283,7 @@
   .alert.show { display: block; }
   .alert-success { background: var(--green-bg); color: var(--green-text); }
   .alert-error { background: var(--red-bg); color: var(--red-text); }
+  .alert-info { background: var(--blue-bg); color: var(--blue-text); }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -305,6 +357,225 @@
     margin-bottom: 1.5rem;
     color: var(--text-primary);
   }
+  /* GHL Styles */
+  .ghl-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .ghl-logo {
+    width: 28px;
+    height: 28px;
+    background: var(--purple);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .ghl-title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .ghl-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .connected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    padding: 3px 10px;
+    background: var(--green-bg);
+    color: var(--green-text);
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .disconnected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    padding: 3px 10px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: 999px;
+  }
+  .workflow-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .workflow-row:last-child { border-bottom: none; }
+  .workflow-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .workflow-icon.active { background: var(--green-bg); }
+  .workflow-icon.inactive { background: var(--amber-bg); }
+  .workflow-icon.draft { background: var(--bg-secondary); }
+  .workflow-info { flex: 1; min-width: 0; }
+  .workflow-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .workflow-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .workflow-stats {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .wstat {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+  }
+  .wstat.warn { background: var(--amber-bg); color: var(--amber-text); }
+  .wstat.good { background: var(--green-bg); color: var(--green-text); }
+  .insight-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .insight-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .insight-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .insight-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .insight-action {
+    font-size: 11px;
+    color: var(--purple);
+    font-weight: 500;
+    margin-top: 6px;
+    cursor: pointer;
+    display: inline-block;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .tag-green { background: var(--green-bg); color: var(--green-text); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .tag-red { background: var(--red-bg); color: var(--red-text); }
+  .tag-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple-text); }
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 12px;
+  }
+  .pipeline-stage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .pipeline-stage:last-child { border-bottom: none; }
+  .stage-name { font-size: 13px; font-weight: 500; }
+  .stage-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    margin: 0 12px;
+    overflow: hidden;
+  }
+  .stage-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--purple);
+    transition: width 0.4s ease;
+  }
+  .stage-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 60px;
+    text-align: right;
+  }
+  .sync-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+  }
+  .sync-row:last-child { border-bottom: none; }
+  .sync-label { color: var(--text-secondary); }
+  .sync-value { font-weight: 500; }
+  .api-key-masked {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+  }
 </style>
 </head>
 <body>
@@ -317,6 +588,7 @@
     <button class="nav-btn active" onclick="switchTab('input',this)">Registro diário</button>
     <button class="nav-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
     <button class="nav-btn" onclick="switchTab('historico',this)">Histórico</button>
+    <button class="nav-btn ghl-btn" onclick="switchTab('ghl',this)">GoHighLevel</button>
   </nav>
 </header>
 <div class="container">
@@ -349,6 +621,7 @@
       <button class="btn-primary" onclick="saveEntry()">Salvar registro</button>
     </div>
   </div>
+
   <!-- DASHBOARD -->
   <div id="page-dashboard" class="page">
     <div class="page-title">Dashboard</div>
@@ -360,6 +633,7 @@
     </div>
     <div id="dash-content"></div>
   </div>
+
   <!-- HISTÓRICO -->
   <div id="page-historico" class="page">
     <div class="page-title">Histórico de registros</div>
@@ -367,8 +641,111 @@
       <div class="tbl-wrap" id="hist-content"></div>
     </div>
   </div>
+
+  <!-- GOHIGHLEVEL -->
+  <div id="page-ghl" class="page">
+    <div class="ghl-header">
+      <div class="ghl-logo">GHL</div>
+      <div>
+        <div class="ghl-title">GoHighLevel CRM</div>
+        <div class="ghl-subtitle">Análise de workflows e otimizações</div>
+      </div>
+      <div style="margin-left:auto;" id="ghl-connection-badge">
+        <span class="disconnected-badge">&#9679; Desconectado</span>
+      </div>
+    </div>
+
+    <!-- Configuração da API -->
+    <div class="card" id="ghl-config-card">
+      <div class="card-title" style="margin-bottom:1rem;">Configuração da API</div>
+      <div id="ghl-config-alert" class="alert"></div>
+      <div class="field">
+        <label>API Key (Private Integration Token)</label>
+        <input type="password" id="ghl-api-key" placeholder="pit-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Location ID</label>
+        <input type="text" id="ghl-location-id" placeholder="Ex: AbCdEfGhIj1234567890" autocomplete="off">
+        <span style="font-size:11px;color:var(--text-tertiary);margin-top:3px;">
+          Encontrado em: Settings → Business Info → Location ID
+        </span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:1rem;">
+        <button class="btn-purple" onclick="ghlConnect()" id="ghl-connect-btn">
+          Conectar ao GHL
+        </button>
+        <button class="btn-secondary" onclick="ghlLoadSaved()">Carregar salvo</button>
+      </div>
+    </div>
+
+    <!-- Conteúdo GHL (aparece após conectar) -->
+    <div id="ghl-content" style="display:none;">
+
+      <!-- Resumo da conta -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Resumo da Conta</span>
+          <button class="btn-secondary" onclick="ghlRefresh()" style="font-size:12px;padding:5px 12px;">Atualizar</button>
+        </div>
+        <div class="grid4" id="ghl-summary-cards">
+          <div class="mcard"><div class="lbl">Contatos</div><div class="val" id="ghl-total-contacts">—</div></div>
+          <div class="mcard"><div class="lbl">Oportunidades</div><div class="val" id="ghl-total-opps">—</div></div>
+          <div class="mcard"><div class="lbl">Workflows ativos</div><div class="val" id="ghl-active-wf">—</div></div>
+          <div class="mcard"><div class="lbl">Pipelines</div><div class="val" id="ghl-total-pipelines">—</div></div>
+        </div>
+      </div>
+
+      <!-- Pipeline principal -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Pipeline — Distribuição por Etapa</span>
+          <span id="ghl-pipeline-name" style="font-size:12px;color:var(--text-secondary);"></span>
+        </div>
+        <div id="ghl-pipeline-stages">
+          <div class="loading-overlay"><div class="loading-spinner"></div><br>Carregando pipeline...</div>
+        </div>
+      </div>
+
+      <!-- Análise de Workflows -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Workflows</span>
+          <span id="ghl-wf-count" style="font-size:12px;color:var(--text-secondary);"></span>
+        </div>
+        <div id="ghl-workflows-list">
+          <div class="loading-overlay"><div class="loading-spinner"></div><br>Carregando workflows...</div>
+        </div>
+      </div>
+
+      <!-- Insights e Otimizações -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Insights &amp; Otimizações</span>
+          <span style="font-size:11px;color:var(--text-tertiary);">Baseado nos seus dados</span>
+        </div>
+        <div id="ghl-insights"></div>
+      </div>
+
+      <!-- Sync com Funil -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Sincronizar com Funil Comercial</span>
+          <button class="btn-purple" onclick="ghlSyncToFunil()" style="padding:7px 14px;font-size:13px;" id="sync-btn">
+            Sincronizar dados
+          </button>
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem;">
+          Puxa automaticamente contatos criados hoje e oportunidades ganhas/perdidas do GHL para o registro do funil.
+        </p>
+        <div id="sync-preview"></div>
+      </div>
+
+    </div>
+  </div>
 </div>
+
 <script>
+// ── Funil Comercial (original) ──────────────────────────────────────────────
 let currentPeriod = 'semana';
 let chartInstance = null;
 const DB_KEY = 'dm_funil_v1';
@@ -376,9 +753,8 @@ function loadDB(){
   try { return JSON.parse(localStorage.getItem(DB_KEY)) || {}; }
   catch(e){ return {}; }
 }
-function saveDB(db){
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
-}
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
 function switchTab(name, el){
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
@@ -386,12 +762,13 @@ function switchTab(name, el){
   document.getElementById('page-'+name).classList.add('active');
   if(name==='dashboard') renderDash();
   if(name==='historico') renderHist();
+  if(name==='ghl') renderGHL();
 }
-function showAlert(msg, type){
-  const el = document.getElementById('alert-box');
+function showAlert(msg, type, elId='alert-box'){
+  const el = document.getElementById(elId);
   el.textContent = msg;
   el.className = 'alert show alert-'+type;
-  setTimeout(() => el.classList.remove('show'), 3000);
+  setTimeout(() => el.classList.remove('show'), 4000);
 }
 function saveEntry(){
   const date = document.getElementById('entry-date').value;
@@ -506,21 +883,17 @@ function renderDash(){
     </div>
   `;
   if(chartInstance){ chartInstance.destroy(); chartInstance = null; }
-  const labels     = entries.map(e => e.date.slice(5));
-  const dataLeads  = entries.map(e => e.leads);
-  const dataFecha  = entries.map(e => e.fecha);
   chartInstance = new Chart(document.getElementById('chart-evo'), {
     type: 'bar',
     data: {
-      labels,
+      labels: entries.map(e => e.date.slice(5)),
       datasets: [
-        { label:'Leads',       data:dataLeads, backgroundColor:'#85B7EB', borderRadius:3 },
-        { label:'Fechamentos', data:dataFecha, backgroundColor:'#1D9E75', borderRadius:3 },
+        { label:'Leads',       data:entries.map(e=>e.leads), backgroundColor:'#85B7EB', borderRadius:3 },
+        { label:'Fechamentos', data:entries.map(e=>e.fecha), backgroundColor:'#1D9E75', borderRadius:3 },
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display:false } },
       scales: {
         x: { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
@@ -566,6 +939,447 @@ function renderHist(){
     </table>`;
 }
 document.getElementById('entry-date').value = new Date().toISOString().slice(0,10);
+
+// ── GoHighLevel Integration ──────────────────────────────────────────────────
+const GHL_KEY = 'dm_ghl_config_v1';
+const GHL_BASE = 'https://services.leadconnectorhq.com';
+const GHL_VERSION = '2021-07-28';
+
+let ghlConfig = null;
+let ghlData = { workflows:[], pipelines:[], contacts:0, opportunities:0 };
+
+function ghlSaveConfig(apiKey, locationId){
+  const cfg = { apiKey, locationId };
+  localStorage.setItem(GHL_KEY, JSON.stringify(cfg));
+  return cfg;
+}
+function ghlLoadConfig(){
+  try { return JSON.parse(localStorage.getItem(GHL_KEY)) || null; }
+  catch(e){ return null; }
+}
+
+function ghlLoadSaved(){
+  const cfg = ghlLoadConfig();
+  if(!cfg){ showAlert('Nenhuma configuração salva encontrada.','error','ghl-config-alert'); return; }
+  document.getElementById('ghl-api-key').value = cfg.apiKey;
+  document.getElementById('ghl-location-id').value = cfg.locationId;
+  showAlert('Configuração carregada. Clique em Conectar para sincronizar.','info','ghl-config-alert');
+}
+
+async function ghlFetch(path, params=''){
+  const cfg = ghlConfig;
+  if(!cfg) throw new Error('Não configurado');
+  const url = `${GHL_BASE}${path}${params}`;
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${cfg.apiKey}`,
+      'Version': GHL_VERSION,
+      'Content-Type': 'application/json'
+    }
+  });
+  if(!res.ok){
+    const txt = await res.text();
+    throw new Error(`GHL API ${res.status}: ${txt.slice(0,200)}`);
+  }
+  return res.json();
+}
+
+async function ghlConnect(){
+  const apiKey = document.getElementById('ghl-api-key').value.trim();
+  const locationId = document.getElementById('ghl-location-id').value.trim();
+  if(!apiKey){ showAlert('Informe a API Key.','error','ghl-config-alert'); return; }
+  if(!locationId){ showAlert('Informe o Location ID.','error','ghl-config-alert'); return; }
+
+  const btn = document.getElementById('ghl-connect-btn');
+  btn.innerHTML = '<span class="spinner"></span> Conectando...';
+  btn.disabled = true;
+
+  ghlConfig = { apiKey, locationId };
+
+  try {
+    // Testar conexão buscando workflows
+    const [wfData, pipeData] = await Promise.all([
+      ghlFetch(`/workflows/`, `?locationId=${locationId}`),
+      ghlFetch(`/opportunities/pipelines/`, `?locationId=${locationId}`)
+    ]);
+
+    ghlData.workflows = wfData.workflows || [];
+    ghlData.pipelines = pipeData.pipelines || [];
+
+    // Salvar config
+    ghlSaveConfig(apiKey, locationId);
+    ghlConfig = ghlLoadConfig();
+
+    // Marcar como conectado
+    document.getElementById('ghl-connection-badge').innerHTML =
+      '<span class="connected-badge">&#9679; Conectado</span>';
+
+    showAlert('Conectado com sucesso!','success','ghl-config-alert');
+    document.getElementById('ghl-content').style.display = 'block';
+
+    renderGHLContent();
+
+  } catch(err){
+    console.error(err);
+    showAlert('Erro ao conectar: ' + err.message, 'error', 'ghl-config-alert');
+    ghlConfig = null;
+  } finally {
+    btn.innerHTML = 'Conectar ao GHL';
+    btn.disabled = false;
+  }
+}
+
+function renderGHL(){
+  const cfg = ghlLoadConfig();
+  if(cfg){
+    document.getElementById('ghl-api-key').value = cfg.apiKey;
+    document.getElementById('ghl-location-id').value = cfg.locationId;
+  }
+  if(ghlConfig && ghlData.workflows.length){
+    document.getElementById('ghl-content').style.display = 'block';
+    renderGHLContent();
+  }
+}
+
+async function ghlRefresh(){
+  if(!ghlConfig){ showAlert('Conecte primeiro.','error','ghl-config-alert'); return; }
+  try {
+    const [wfData, pipeData] = await Promise.all([
+      ghlFetch(`/workflows/`, `?locationId=${ghlConfig.locationId}`),
+      ghlFetch(`/opportunities/pipelines/`, `?locationId=${ghlConfig.locationId}`)
+    ]);
+    ghlData.workflows = wfData.workflows || [];
+    ghlData.pipelines = pipeData.pipelines || [];
+    renderGHLContent();
+  } catch(err){
+    console.error(err);
+  }
+}
+
+function renderGHLContent(){
+  renderGHLWorkflows();
+  renderGHLPipeline();
+  renderGHLInsights();
+  renderGHLSummary();
+}
+
+function renderGHLSummary(){
+  const activeWf = ghlData.workflows.filter(w => w.status === 'published').length;
+  document.getElementById('ghl-active-wf').textContent = activeWf;
+  document.getElementById('ghl-total-pipelines').textContent = ghlData.pipelines.length;
+  // Contatos e oportunidades via API adicional
+  if(ghlConfig){
+    ghlFetch(`/contacts/`, `?locationId=${ghlConfig.locationId}&limit=1`)
+      .then(d => {
+        document.getElementById('ghl-total-contacts').textContent =
+          (d.meta?.total || d.contacts?.length || '—').toLocaleString('pt-BR');
+      }).catch(()=>{});
+    ghlFetch(`/opportunities/search/`, `?location_id=${ghlConfig.locationId}&limit=1`)
+      .then(d => {
+        document.getElementById('ghl-total-opps').textContent =
+          (d.meta?.total || d.opportunities?.length || '—').toLocaleString('pt-BR');
+        ghlData.opportunities = d.meta?.total || 0;
+      }).catch(()=>{});
+  }
+}
+
+function renderGHLWorkflows(){
+  const wfs = ghlData.workflows;
+  const el = document.getElementById('ghl-workflows-list');
+  document.getElementById('ghl-wf-count').textContent = `${wfs.length} workflows`;
+
+  if(!wfs.length){
+    el.innerHTML = '<div class="empty">Nenhum workflow encontrado.</div>';
+    return;
+  }
+
+  const statusIcon = { published:'✅', draft:'📝', archived:'📦' };
+  const statusLabel = { published:'Ativo', draft:'Rascunho', archived:'Arquivado' };
+
+  el.innerHTML = wfs.map(wf => {
+    const icon = statusIcon[wf.status] || '🔧';
+    const cls = wf.status === 'published' ? 'active' : wf.status === 'draft' ? 'draft' : 'inactive';
+    const stepsCount = wf.steps?.length || 0;
+    const updatedAt = wf.updatedAt ? new Date(wf.updatedAt).toLocaleDateString('pt-BR') : '—';
+    return `
+      <div class="workflow-row">
+        <div class="workflow-icon ${cls}">${icon}</div>
+        <div class="workflow-info">
+          <div class="workflow-name">${escHtml(wf.name || 'Sem nome')}</div>
+          <div class="workflow-meta">Atualizado em ${updatedAt}</div>
+          <div class="workflow-stats">
+            <span class="wstat">${stepsCount} etapas</span>
+            <span class="wstat ${wf.status==='published'?'good':''}">${statusLabel[wf.status]||wf.status}</span>
+            ${stepsCount === 0 ? '<span class="wstat warn">Sem etapas</span>' : ''}
+            ${!wf.triggers?.length ? '<span class="wstat warn">Sem gatilho</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderGHLPipeline(){
+  const pipelines = ghlData.pipelines;
+  const el = document.getElementById('ghl-pipeline-stages');
+
+  if(!pipelines.length){
+    el.innerHTML = '<div class="empty">Nenhum pipeline encontrado.</div>';
+    return;
+  }
+
+  // Usar o primeiro pipeline (principal)
+  const pipeline = pipelines[0];
+  document.getElementById('ghl-pipeline-name').textContent = escHtml(pipeline.name || '');
+  const stages = pipeline.stages || [];
+
+  if(!stages.length){
+    el.innerHTML = '<div class="empty">Pipeline sem etapas configuradas.</div>';
+    return;
+  }
+
+  // Buscar contagem por etapa
+  if(ghlConfig){
+    Promise.all(stages.map(stage =>
+      ghlFetch(`/opportunities/search/`, `?location_id=${ghlConfig.locationId}&pipeline_id=${pipeline.id}&pipeline_stage_id=${stage.id}&limit=1`)
+        .then(d => ({ ...stage, count: d.meta?.total || 0 }))
+        .catch(() => ({ ...stage, count: 0 }))
+    )).then(stagesWithCounts => {
+      const maxCount = Math.max(...stagesWithCounts.map(s => s.count), 1);
+      el.innerHTML = stagesWithCounts.map(stage => `
+        <div class="pipeline-stage">
+          <div class="stage-name">${escHtml(stage.name)}</div>
+          <div class="stage-bar">
+            <div class="stage-fill" style="width:${Math.round((stage.count/maxCount)*100)}%"></div>
+          </div>
+          <div class="stage-count">${stage.count} oport.</div>
+        </div>`).join('');
+    });
+  } else {
+    el.innerHTML = stages.map(stage => `
+      <div class="pipeline-stage">
+        <div class="stage-name">${escHtml(stage.name)}</div>
+        <div class="stage-bar"><div class="stage-fill" style="width:0%"></div></div>
+        <div class="stage-count">—</div>
+      </div>`).join('');
+  }
+}
+
+function renderGHLInsights(){
+  const wfs = ghlData.workflows;
+  const pipelines = ghlData.pipelines;
+  const el = document.getElementById('ghl-insights');
+  const insights = [];
+
+  // Análise 1: Workflows sem gatilho
+  const noTrigger = wfs.filter(w => w.status==='published' && (!w.triggers || !w.triggers.length));
+  if(noTrigger.length){
+    insights.push({
+      icon: '⚠️',
+      title: `${noTrigger.length} workflow(s) ativo(s) sem gatilho`,
+      desc: `${noTrigger.map(w=>w.name).slice(0,3).join(', ')} estão publicados mas não possuem um gatilho configurado — nunca serão acionados automaticamente.`,
+      action: 'Adicionar gatilhos',
+      priority: 'high'
+    });
+  }
+
+  // Análise 2: Workflows em rascunho
+  const drafts = wfs.filter(w => w.status==='draft');
+  if(drafts.length > 2){
+    insights.push({
+      icon: '📝',
+      title: `${drafts.length} workflows em rascunho`,
+      desc: `Você tem vários workflows não publicados. Revise, finalize e publique ou arquive os que não serão usados para manter o CRM organizado.`,
+      action: 'Revisar rascunhos',
+      priority: 'medium'
+    });
+  }
+
+  // Análise 3: Follow-up de leads
+  const hasFollowUp = wfs.some(w =>
+    (w.name||'').toLowerCase().match(/follow.?up|acompan|nurtur|sequ/i)
+  );
+  if(!hasFollowUp){
+    insights.push({
+      icon: '📱',
+      title: 'Sem workflow de follow-up de leads detectado',
+      desc: 'Leads não convertidos na primeira tentativa representam até 80% do potencial de vendas. Crie um fluxo de cadência com SMS/WhatsApp + e-mail nos primeiros 5 dias após entrada.',
+      action: 'Criar workflow de follow-up',
+      priority: 'high'
+    });
+  }
+
+  // Análise 4: Lembrete de reunião
+  const hasReminder = wfs.some(w =>
+    (w.name||'').toLowerCase().match(/lembr|reminder|appoint|reuni/i)
+  );
+  if(!hasReminder){
+    insights.push({
+      icon: '🗓️',
+      title: 'Sem automação de lembrete de reunião',
+      desc: 'Ausências em reuniões custam tempo e aumentam o CAC. Configure envio automático de lembrete 24h e 1h antes via WhatsApp para reduzir no-shows em até 40%.',
+      action: 'Criar lembrete de reunião',
+      priority: 'medium'
+    });
+  }
+
+  // Análise 5: Onboarding pós-venda
+  const hasOnboarding = wfs.some(w =>
+    (w.name||'').toLowerCase().match(/onboard|boas.?vindas|welcome|pós.?venda|pos.?venda/i)
+  );
+  if(!hasOnboarding){
+    insights.push({
+      icon: '🎉',
+      title: 'Sem workflow de onboarding pós-fechamento',
+      desc: 'Clientes que recebem um onboarding estruturado têm taxa de churn até 50% menor. Automatize boas-vindas, próximos passos e check-in em 7/30 dias.',
+      action: 'Criar onboarding pós-venda',
+      priority: 'medium'
+    });
+  }
+
+  // Análise 6: Reengajamento de leads frios
+  const hasReengagement = wfs.some(w =>
+    (w.name||'').toLowerCase().match(/reengaj|re-engag|frio|cold|perdido|lost/i)
+  );
+  if(!hasReengagement){
+    insights.push({
+      icon: '🔄',
+      title: 'Sem campanha de reengajamento de leads frios',
+      desc: 'Leads marcados como perdidos há mais de 30 dias podem ser reativados com ofertas/contexto novo. Implemente uma sequência mensal de reaquecimento.',
+      action: 'Criar campanha de reengajamento',
+      priority: 'low'
+    });
+  }
+
+  // Análise 7: Pipeline sem estágios suficientes
+  if(pipelines.length > 0){
+    const stages = pipelines[0].stages || [];
+    if(stages.length < 4){
+      insights.push({
+        icon: '📊',
+        title: 'Pipeline com poucas etapas',
+        desc: `Seu pipeline "${pipelines[0].name}" tem apenas ${stages.length} etapa(s). Um funil bem definido com 5-7 etapas permite identificar gargalos com precisão e automatizar ações por estágio.`,
+        action: 'Revisar estrutura do pipeline',
+        priority: 'medium'
+      });
+    }
+  }
+
+  // Análise 8: Velocidade de resposta
+  insights.push({
+    icon: '⚡',
+    title: 'Automatize a resposta ao lead nos primeiros 5 minutos',
+    desc: 'Leads respondidos em menos de 5 minutos têm 21x mais chance de converter. Configure um workflow de resposta imediata (WhatsApp/SMS) disparado ao criar novo contato via formulário ou anúncio.',
+    action: 'Criar resposta imediata',
+    priority: wfs.some(w => (w.name||'').match(/resposta|instant|imediato/i)) ? 'low' : 'high'
+  });
+
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const priorityColor = { high:'tag-red', medium:'tag-amber', low:'tag-blue' };
+  const priorityLabel = { high:'Alta prioridade', medium:'Média', low:'Baixa' };
+
+  insights.sort((a,b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  el.innerHTML = insights.map(ins => `
+    <div class="insight-card">
+      <div class="insight-icon">${ins.icon}</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <div class="insight-title">${escHtml(ins.title)}</div>
+          <span class="tag ${priorityColor[ins.priority]}">${priorityLabel[ins.priority]}</span>
+        </div>
+        <div class="insight-desc">${escHtml(ins.desc)}</div>
+        <div class="insight-action" onclick="copyInsight('${escAttr(ins.title)}','${escAttr(ins.action)}')">
+          + ${escHtml(ins.action)} →
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function ghlSyncToFunil(){
+  if(!ghlConfig){ showAlert('Conecte ao GHL primeiro.','error','ghl-config-alert'); return; }
+  const btn = document.getElementById('sync-btn');
+  btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
+  btn.disabled = true;
+
+  const preview = document.getElementById('sync-preview');
+  preview.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div><br>Buscando dados de hoje...</div>';
+
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const startTs = new Date(today + 'T00:00:00').getTime();
+    const endTs = new Date(today + 'T23:59:59').getTime();
+
+    // Buscar contatos criados hoje
+    const contactsData = await ghlFetch(`/contacts/`, `?locationId=${ghlConfig.locationId}&startAfter=${startTs}&limit=100`);
+    const todayContacts = (contactsData.contacts || []).filter(c => {
+      const ts = new Date(c.dateAdded || c.createdAt).getTime();
+      return ts >= startTs && ts <= endTs;
+    });
+
+    // Buscar oportunidades ganhas hoje
+    const wonData = await ghlFetch(`/opportunities/search/`, `?location_id=${ghlConfig.locationId}&status=won&limit=100`);
+    const todayWon = (wonData.opportunities || []).filter(o => {
+      const ts = new Date(o.lastStatusChangeAt || o.updatedAt).getTime();
+      return ts >= startTs && ts <= endTs;
+    });
+
+    // Buscar oportunidades perdidas hoje
+    const lostData = await ghlFetch(`/opportunities/search/`, `?location_id=${ghlConfig.locationId}&status=lost&limit=100`);
+    const todayLost = (lostData.opportunities || []).filter(o => {
+      const ts = new Date(o.lastStatusChangeAt || o.updatedAt).getTime();
+      return ts >= startTs && ts <= endTs;
+    });
+
+    const db = loadDB();
+    const entry = db[today] || { date:today, invest:0, leads:0, ligas:0, agend:0, comp:0, pitch:0, fecha:0, perd:0 };
+
+    // Somar leads do GHL
+    const ghlLeads = todayContacts.length;
+    const ghlFecha = todayWon.length;
+    const ghlPerd  = todayLost.length;
+
+    preview.innerHTML = `
+      <div class="sync-row"><div class="sync-label">Data sincronizada</div><div class="sync-value">${today}</div></div>
+      <div class="sync-row"><div class="sync-label">Contatos criados hoje (GHL)</div><div class="sync-value" style="color:var(--accent);">${ghlLeads} leads</div></div>
+      <div class="sync-row"><div class="sync-label">Oportunidades ganhas hoje</div><div class="sync-value" style="color:var(--green);">${ghlFecha} fechamentos</div></div>
+      <div class="sync-row"><div class="sync-label">Oportunidades perdidas hoje</div><div class="sync-value" style="color:var(--red);">${ghlPerd} perdidos</div></div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn-purple" style="font-size:13px;padding:8px 16px;" onclick="applyGHLSync(${ghlLeads},${ghlFecha},${ghlPerd},'${today}')">
+          Aplicar ao registro do dia
+        </button>
+        <button class="btn-secondary" style="font-size:13px;" onclick="document.getElementById('sync-preview').innerHTML=''">Cancelar</button>
+      </div>`;
+
+  } catch(err){
+    console.error(err);
+    preview.innerHTML = `<div class="alert show alert-error">Erro ao sincronizar: ${escHtml(err.message)}</div>`;
+  } finally {
+    btn.innerHTML = 'Sincronizar dados';
+    btn.disabled = false;
+  }
+}
+
+function applyGHLSync(leads, fecha, perd, date){
+  const db = loadDB();
+  const entry = db[date] || { date, invest:0, leads:0, ligas:0, agend:0, comp:0, pitch:0, fecha:0, perd:0 };
+  entry.leads = (entry.leads || 0) + leads;
+  entry.fecha = (entry.fecha || 0) + fecha;
+  entry.perd  = (entry.perd  || 0) + perd;
+  db[date] = entry;
+  saveDB(db);
+  document.getElementById('sync-preview').innerHTML =
+    `<div class="alert show alert-success">Dados aplicados ao registro de ${date}! Acesse o Histórico para conferir.</div>`;
+}
+
+function copyInsight(title, action){
+  const text = `${title}\nAção: ${action}`;
+  navigator.clipboard.writeText(text).catch(()=>{});
+  // Feedback visual simples
+  alert(`Copiado:\n${text}`);
+}
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>

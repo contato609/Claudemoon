@@ -1,631 +1,1595 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tracker Funil Comercial — Digital Moon</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f3;
-    --bg-tertiary: #eeede8;
-    --text-primary: #1a1a18;
-    --text-secondary: #5f5e5a;
-    --text-tertiary: #888780;
-    --border: rgba(0,0,0,0.12);
-    --border-md: rgba(0,0,0,0.2);
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --accent: #378ADD;
-    --green: #1D9E75;
-    --amber: #BA7517;
-    --red: #E24B4A;
-    --green-bg: #EAF3DE;
-    --green-text: #27500A;
-    --amber-bg: #FAEEDA;
-    --amber-text: #633806;
-    --red-bg: #FCEBEB;
-    --red-text: #791F1F;
-    --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
-  }
-  @media (prefers-color-scheme: dark) {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Moon — Sistema de Visitas Garantidas™</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg-primary: #1e1e1c;
-      --bg-secondary: #2a2a28;
-      --bg-tertiary: #333331;
-      --text-primary: #f0efe8;
-      --text-secondary: #b4b2a9;
-      --text-tertiary: #888780;
-      --border: rgba(255,255,255,0.1);
-      --border-md: rgba(255,255,255,0.18);
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dark: #9A7A30;
+      --black: #080808;
+      --black-2: #0E0E0E;
+      --black-3: #141414;
+      --black-4: #1C1C1C;
+      --white: #F5F0E8;
+      --white-dim: rgba(245,240,232,0.6);
+      --white-faint: rgba(245,240,232,0.1);
     }
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  .app-header {
-    background: var(--bg-primary);
-    border-bottom: 0.5px solid var(--border);
-    padding: 0 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-  .app-nav {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-  }
-  .nav-btn {
-    font-size: 13px;
-    padding: 6px 14px;
-    border-radius: var(--radius-md);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .nav-btn:hover { background: var(--bg-secondary); }
-  .nav-btn.active {
-    background: var(--blue-bg);
-    color: var(--blue-text);
-    font-weight: 500;
-  }
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-  .page { display: none; }
-  .page.active { display: block; }
-  .card {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-  }
-  .card-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-tertiary);
-    margin: 1.25rem 0 0.75rem;
-    padding-bottom: 6px;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
-  @media(max-width: 600px) {
-    .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  }
-  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
-  .field label { font-size: 12px; color: var(--text-secondary); }
-  input[type="number"], input[type="date"] {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 14px;
-    border: 0.5px solid var(--border-md);
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    outline: none;
-    transition: border-color 0.15s;
-    font-family: inherit;
-  }
-  input[type="number"]:focus, input[type="date"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
-  }
-  .btn-primary {
-    width: 100%;
-    padding: 11px;
-    font-size: 14px;
-    font-weight: 500;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: opacity 0.15s;
-    font-family: inherit;
-  }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .mcard {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    padding: 12px;
-  }
-  .mcard .lbl {
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
-  .mcard .val {
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-  .mcard .sub {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    margin-top: 3px;
-  }
-  .period-tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .ptab {
-    font-size: 12px;
-    padding: 5px 14px;
-    border-radius: 999px;
-    border: 0.5px solid var(--border-md);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .ptab:hover { background: var(--bg-secondary); }
-  .ptab.active {
-    background: var(--blue-bg);
-    color: var(--blue-text);
-    border-color: transparent;
-    font-weight: 500;
-  }
-  .conv-good { color: var(--green); font-weight: 500; }
-  .conv-warn { color: var(--amber); font-weight: 500; }
-  .conv-bad { color: var(--red); font-weight: 500; }
-  .alert {
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    display: none;
-  }
-  .alert.show { display: block; }
-  .alert-success { background: var(--green-bg); color: var(--green-text); }
-  .alert-error { background: var(--red-bg); color: var(--red-text); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th {
-    text-align: left;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    padding: 8px 10px;
-    border-bottom: 0.5px solid var(--border);
-    white-space: nowrap;
-  }
-  td {
-    padding: 8px 10px;
-    border-bottom: 0.5px solid var(--border);
-    color: var(--text-primary);
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg-secondary); }
-  .del-btn {
-    font-size: 11px;
-    padding: 3px 8px;
-    cursor: pointer;
-    color: var(--red-text);
-    border: 0.5px solid var(--red);
-    border-radius: var(--radius-md);
-    background: transparent;
-    font-family: inherit;
-    transition: background 0.15s;
-  }
-  .del-btn:hover { background: var(--red-bg); }
-  .empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-tertiary);
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .chart-wrap {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    margin: 1rem 0 0.5rem;
-  }
-  .legend {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-  .legend span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-  .tbl-wrap { overflow-x: auto; }
-  .page-title {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
-  }
-  .loading {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-tertiary);
-    font-size: 13px;
-  }
-</style>
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 60px;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+    .nav-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 0.08em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--white-dim);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold) !important;
+      padding: 10px 24px;
+      border-radius: 2px;
+      font-size: 13px !important;
+      letter-spacing: 0.08em !important;
+      transition: background 0.3s, color 0.3s !important;
+      cursor: pointer;
+    }
+    .nav-cta:hover {
+      background: var(--gold) !important;
+      color: var(--black) !important;
+    }
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 140px 60px 80px;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .hero-bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+    .hero-bg-circle-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+    }
+    .hero-bg-circle-2 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      bottom: 50px;
+      left: 20%;
+    }
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 6px 16px;
+      border-radius: 2px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 40px;
+      animation: fadeUp 0.8s ease both;
+    }
+    .hero-tag-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .hero-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 7vw, 96px);
+      font-weight: 300;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .hero-headline em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .hero-sub {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--white-dim);
+      max-width: 560px;
+      margin-bottom: 52px;
+      font-weight: 300;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      animation: fadeUp 0.8s 0.3s ease both;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--black);
+      padding: 16px 40px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.3s, transform 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      color: var(--white-dim);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.3s;
+    }
+    .btn-secondary:hover { color: var(--gold); }
+    .btn-secondary svg { transition: transform 0.3s; }
+    .btn-secondary:hover svg { transform: translateX(4px); }
+    .hero-stats {
+      position: absolute;
+      right: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      z-index: 1;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+    .hero-stat {
+      text-align: right;
+    }
+    .hero-stat-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 48px;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--white-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .hero-stat-divider {
+      width: 1px;
+      height: 40px;
+      background: rgba(201,168,76,0.2);
+      margin-left: auto;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* ─── SECTION COMMONS ─── */
+    section {
+      padding: 120px 60px;
+    }
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-tag::before {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4.5vw, 60px);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .section-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    /* ─── PROBLEMA ─── */
+    #problema {
+      background: var(--black-2);
+      position: relative;
+      overflow: hidden;
+    }
+    #problema::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+    }
+    .problema-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .problema-dores {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .dor-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px;
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 4px;
+      background: rgba(201,168,76,0.03);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .dor-item:hover {
+      border-color: rgba(201,168,76,0.3);
+      background: rgba(201,168,76,0.06);
+    }
+    .dor-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .dor-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .dor-desc {
+      font-size: 14px;
+      color: var(--white-dim);
+      line-height: 1.6;
+    }
+    .problema-quote {
+      position: sticky;
+      top: 120px;
+    }
+    .quote-card {
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 48px;
+      border-radius: 4px;
+      position: relative;
+      background: rgba(201,168,76,0.04);
+    }
+    .quote-card::before {
+      content: '"';
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 120px;
+      color: var(--gold);
+      opacity: 0.2;
+      position: absolute;
+      top: -20px;
+      left: 32px;
+      line-height: 1;
+    }
+    .quote-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--white);
+      margin-bottom: 32px;
+    }
+    .quote-attr {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    /* ─── SOLUÇÃO / PASSOS ─── */
+    #solucao {
+      position: relative;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 120px 60px;
+    }
+    .solucao-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: end;
+      margin-bottom: 80px;
+    }
+    .solucao-desc {
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--white-dim);
+      align-self: end;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .step-card {
+      background: var(--black-3);
+      padding: 48px 40px;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .step-card:hover { background: var(--black-4); }
+    .step-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 80px;
+      font-weight: 300;
+      color: rgba(201,168,76,0.12);
+      line-height: 1;
+      margin-bottom: 24px;
+      display: block;
+    }
+    .step-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--white-dim);
+    }
+    .step-list {
+      list-style: none;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .step-list li {
+      font-size: 13px;
+      color: var(--white-dim);
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .step-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+    }
+    /* ─── CRM ─── */
+    #crm {
+      background: var(--black-2);
+      position: relative;
+      overflow: hidden;
+    }
+    #crm::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+    }
+    .crm-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .crm-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      margin-bottom: 80px;
+    }
+    .crm-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .crm-feat {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 20px;
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 4px;
+      background: rgba(201,168,76,0.02);
+      transition: border-color 0.3s;
+    }
+    .crm-feat:hover { border-color: rgba(201,168,76,0.25); }
+    .crm-feat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 2px;
+      background: rgba(201,168,76,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+    .crm-feat-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .crm-feat-desc {
+      font-size: 12px;
+      color: var(--white-dim);
+      line-height: 1.5;
+    }
+    .crm-mockup {
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--black-3);
+    }
+    .crm-mockup-bar {
+      background: var(--black-4);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+    .crm-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .crm-dot-r { background: #FF5F57; }
+    .crm-dot-y { background: #FEBC2E; }
+    .crm-dot-g { background: #28C840; }
+    .crm-screen {
+      padding: 24px;
+    }
+    .crm-metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .crm-metric {
+      background: var(--black-4);
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 4px;
+      padding: 16px;
+      text-align: center;
+    }
+    .crm-metric-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      color: var(--gold);
+      font-weight: 400;
+    }
+    .crm-metric-lbl {
+      font-size: 10px;
+      color: var(--white-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+    .crm-bar-chart {
+      background: var(--black-4);
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 4px;
+      padding: 16px;
+    }
+    .crm-bar-title {
+      font-size: 11px;
+      color: var(--white-dim);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .crm-bars {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      height: 60px;
+    }
+    .crm-bar {
+      flex: 1;
+      background: rgba(201,168,76,0.3);
+      border-radius: 2px 2px 0 0;
+      position: relative;
+      transition: background 0.3s;
+    }
+    .crm-bar:hover { background: rgba(201,168,76,0.6); }
+    .crm-bar.active { background: var(--gold); }
+    /* ─── ISA ─── */
+    #isa {
+      position: relative;
+      overflow: hidden;
+    }
+    .isa-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: center;
+    }
+    .isa-chat {
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--black-3);
+    }
+    .isa-chat-header {
+      background: var(--black-4);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+    .isa-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--black);
+      flex-shrink: 0;
+    }
+    .isa-chat-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .isa-status {
+      font-size: 11px;
+      color: #4CAF50;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .isa-status::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #4CAF50;
+      border-radius: 50%;
+    }
+    .isa-chat-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .msg-bot {
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.15);
+      align-self: flex-start;
+      color: var(--white);
+    }
+    .msg-user {
+      background: var(--gold);
+      color: var(--black);
+      align-self: flex-end;
+    }
+    .msg-time {
+      font-size: 10px;
+      opacity: 0.5;
+      margin-top: 4px;
+    }
+    .isa-features {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .isa-feat {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .isa-feat-icon {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .isa-feat-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .isa-feat-desc {
+      font-size: 13px;
+      color: var(--white-dim);
+      line-height: 1.6;
+    }
+    /* ─── CASES ─── */
+    #cases {
+      background: var(--black-2);
+      position: relative;
+    }
+    #cases::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+    }
+    .cases-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .cases-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+    .cases-header .section-tag {
+      justify-content: center;
+    }
+    .cases-header .section-tag::before { display: none; }
+    .cases-header .section-tag::after {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .cases-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .case-card {
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--black-3);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .case-card:hover {
+      border-color: rgba(201,168,76,0.4);
+      transform: translateY(-4px);
+    }
+    .case-img-placeholder {
+      height: 200px;
+      background: linear-gradient(135deg, var(--black-4) 0%, rgba(201,168,76,0.05) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+    .case-body { padding: 32px; }
+    .case-tag {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .case-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .case-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--white-dim);
+      margin-bottom: 28px;
+    }
+    .case-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      padding-top: 24px;
+    }
+    .case-metric-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--gold);
+      font-weight: 400;
+    }
+    .case-metric-lbl {
+      font-size: 11px;
+      color: var(--white-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+    /* ─── OFERTA ─── */
+    #oferta {
+      position: relative;
+      overflow: hidden;
+    }
+    .oferta-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .oferta-card {
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 8px;
+      padding: 72px 80px;
+      background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 100%);
+      position: relative;
+      margin-top: 60px;
+      overflow: hidden;
+    }
+    .oferta-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center top, rgba(201,168,76,0.08) 0%, transparent 70%);
+    }
+    .oferta-price-label {
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white-dim);
+      margin-bottom: 12px;
+    }
+    .oferta-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 80px;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .oferta-price-sub {
+      font-size: 14px;
+      color: var(--white-dim);
+      margin-bottom: 48px;
+    }
+    .oferta-includes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      text-align: left;
+      margin-bottom: 48px;
+    }
+    .oferta-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 14px;
+      color: var(--white-dim);
+    }
+    .oferta-item::before {
+      content: '✦';
+      color: var(--gold);
+      font-size: 10px;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .oferta-guarantee {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 32px;
+    }
+    /* ─── FAQ ─── */
+    #faq {
+      background: var(--black-2);
+    }
+    #faq::before {
+      content: '';
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+    }
+    .faq-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding-top: 120px;
+      padding-bottom: 120px;
+    }
+    .faq-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .faq-item {
+      border: 1px solid rgba(201,168,76,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      background: var(--black-3);
+    }
+    .faq-question {
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 400;
+      transition: background 0.2s;
+      list-style: none;
+    }
+    .faq-question:hover { background: rgba(201,168,76,0.04); }
+    .faq-question::-webkit-details-marker { display: none; }
+    details[open] .faq-question {
+      color: var(--gold);
+    }
+    .faq-icon {
+      color: var(--gold);
+      font-size: 20px;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+    details[open] .faq-icon { transform: rotate(45deg); }
+    .faq-answer {
+      padding: 0 32px 24px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--white-dim);
+    }
+    /* ─── CTA FINAL ─── */
+    #cta-final {
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      padding: 160px 60px;
+    }
+    .cta-final-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.1) 0%, transparent 70%);
+    }
+    .cta-final-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .cta-final-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(40px, 5vw, 72px);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .cta-final-title em { color: var(--gold); font-style: italic; }
+    .cta-final-sub {
+      font-size: 15px;
+      color: var(--white-dim);
+      line-height: 1.7;
+      margin-bottom: 52px;
+    }
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid rgba(201,168,76,0.1);
+      padding: 48px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-copy {
+      font-size: 12px;
+      color: var(--white-dim);
+    }
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+    /* ─── TICKER ─── */
+    .ticker-wrapper {
+      overflow: hidden;
+      border-top: 1px solid rgba(201,168,76,0.15);
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      padding: 16px 0;
+      background: var(--black-3);
+    }
+    .ticker-track {
+      display: flex;
+      gap: 0;
+      animation: ticker 30s linear infinite;
+      width: max-content;
+    }
+    .ticker-item {
+      white-space: nowrap;
+      padding: 0 48px;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white-dim);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .ticker-item span { color: var(--gold); }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    /* ─── RESPONSIVO ─── */
+    @media (max-width: 1024px) {
+      nav { padding: 20px 30px; }
+      .nav-links { display: none; }
+      section { padding: 80px 30px; }
+      #hero { padding: 120px 30px 80px; }
+      .hero-stats { display: none; }
+      .problema-inner { grid-template-columns: 1fr; gap: 40px; }
+      .solucao-header { grid-template-columns: 1fr; gap: 20px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .crm-header { grid-template-columns: 1fr; gap: 40px; }
+      .crm-features { grid-template-columns: 1fr; }
+      .isa-inner { grid-template-columns: 1fr; gap: 40px; }
+      .cases-grid { grid-template-columns: 1fr; }
+      .oferta-card { padding: 40px 30px; }
+      .oferta-includes { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+    }
+    @media (max-width: 640px) {
+      .crm-metric-row { grid-template-columns: repeat(2, 1fr); }
+      .case-metrics { grid-template-columns: repeat(2, 1fr); }
+      .oferta-price { font-size: 60px; }
+    }
+    /* ─── SCROLL REVEAL ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
 </head>
 <body>
-<header class="app-header">
-  <div class="logo">
-    <div class="logo-dot"></div>
-    Digital Moon — Funil Comercial
-  </div>
-  <nav class="app-nav">
-    <button class="nav-btn active" onclick="switchTab('input',this)">Registro diário</button>
-    <button class="nav-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
-    <button class="nav-btn" onclick="switchTab('historico',this)">Histórico</button>
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <svg class="nav-logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 4 C10 4 4 11 4 20 C4 29 10 36 20 36 C14 30 14 10 20 4Z" fill="#C9A84C"/>
+        <path d="M22 6 L22 34 L26 30 L30 22 L30 18 L26 10 Z" fill="#C9A84C" opacity="0.5"/>
+        <circle cx="28" cy="10" r="3" fill="#E8C97A"/>
+        <circle cx="31" cy="8" r="1.5" fill="#E8C97A" opacity="0.6"/>
+      </svg>
+      <span class="nav-logo-text">DIGITAL MOON</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#solucao">O Método</a></li>
+      <li><a href="#crm">Tecnologia</a></li>
+      <li><a href="#cases">Cases</a></li>
+      <li><a href="#oferta">Investimento</a></li>
+      <li><a href="#cta-final" class="nav-cta">Quero Visitas Garantidas</a></li>
+    </ul>
   </nav>
-</header>
-<div class="container">
-  <!-- REGISTRO DIÁRIO -->
-  <div id="page-input" class="page active">
-    <div class="page-title">Registro diário</div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Entrada do dia</span>
-        <input type="date" id="entry-date" style="width:auto;font-size:13px;padding:6px 10px;">
-      </div>
-      <div id="alert-box" class="alert"></div>
-      <div class="section-label">Investimento e captação</div>
-      <div class="grid2">
-        <div class="field"><label>Investimento em tráfego (R$)</label><input type="number" id="f-invest" min="0" placeholder="0"></div>
-        <div class="field"><label>Leads gerados</label><input type="number" id="f-leads" min="0" placeholder="0"></div>
-      </div>
-      <div class="section-label">Atividade do SDR</div>
-      <div class="grid2">
-        <div class="field"><label>Ligações realizadas</label><input type="number" id="f-ligas" min="0" placeholder="0"></div>
-        <div class="field"><label>Reuniões agendadas</label><input type="number" id="f-agend" min="0" placeholder="0"></div>
-        <div class="field"><label>Reuniões comparecidas</label><input type="number" id="f-comp" min="0" placeholder="0"></div>
-        <div class="field"><label>Pitchs realizados</label><input type="number" id="f-pitch" min="0" placeholder="0"></div>
-      </div>
-      <div class="section-label">Resultado comercial</div>
-      <div class="grid2">
-        <div class="field"><label>Fechamentos</label><input type="number" id="f-fecha" min="0" placeholder="0"></div>
-        <div class="field"><label>Perdidos (pós-pitch)</label><input type="number" id="f-perd" min="0" placeholder="0"></div>
-      </div>
-      <button class="btn-primary" id="save-btn" onclick="saveEntry()">Salvar registro</button>
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg">
+      <div class="hero-bg-circle hero-bg-circle-1"></div>
+      <div class="hero-bg-circle hero-bg-circle-2"></div>
+      <div class="hero-grid-lines"></div>
     </div>
-  </div>
-  <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page">
-    <div class="page-title">Dashboard</div>
-    <div class="period-tabs">
-      <button class="ptab active" onclick="setPeriod('semana',this)">Semana</button>
-      <button class="ptab" onclick="setPeriod('quinzena',this)">Quinzena</button>
-      <button class="ptab" onclick="setPeriod('mes',this)">Mês</button>
-      <button class="ptab" onclick="setPeriod('tudo',this)">Tudo</button>
-    </div>
-    <div id="dash-content"></div>
-  </div>
-  <!-- HISTÓRICO -->
-  <div id="page-historico" class="page">
-    <div class="page-title">Histórico de registros</div>
-    <div class="card">
-      <div class="tbl-wrap" id="hist-content"></div>
-    </div>
-  </div>
-</div>
-<script>
-// ── Supabase client ──────────────────────────────────────────────────────────
-const { createClient } = supabase;
-const sb = createClient(
-  'https://pzwnvuypmwsgnoihkxzq.supabase.co',
-  'sb_publishable_ANMsNc9CpyLAfaQAxh_v0Q_7ZX__vc0'
-);
-
-// ── State ────────────────────────────────────────────────────────────────────
-let currentPeriod = 'semana';
-let chartInstance = null;
-
-// ── Data layer (Supabase) ────────────────────────────────────────────────────
-async function loadEntries() {
-  const { data, error } = await sb.from('entries').select('*').order('date', { ascending: true });
-  if (error) { console.error('loadEntries:', error); return []; }
-  return data;
-}
-
-async function upsertEntry(entry) {
-  const { error } = await sb.from('entries').upsert(entry, { onConflict: 'date' });
-  return error;
-}
-
-async function removeEntry(date) {
-  const { error } = await sb.from('entries').delete().eq('date', date);
-  return error;
-}
-
-// ── UI helpers ───────────────────────────────────────────────────────────────
-function switchTab(name, el) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (name === 'dashboard') renderDash();
-  if (name === 'historico') renderHist();
-}
-
-function showAlert(msg, type) {
-  const el = document.getElementById('alert-box');
-  el.textContent = msg;
-  el.className = 'alert show alert-' + type;
-  setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-// ── Actions ──────────────────────────────────────────────────────────────────
-async function saveEntry() {
-  const date = document.getElementById('entry-date').value;
-  if (!date) { showAlert('Selecione uma data.', 'error'); return; }
-
-  const entry = {
-    date,
-    invest: parseFloat(document.getElementById('f-invest').value) || 0,
-    leads:  parseFloat(document.getElementById('f-leads').value)  || 0,
-    ligas:  parseFloat(document.getElementById('f-ligas').value)  || 0,
-    agend:  parseFloat(document.getElementById('f-agend').value)  || 0,
-    comp:   parseFloat(document.getElementById('f-comp').value)   || 0,
-    pitch:  parseFloat(document.getElementById('f-pitch').value)  || 0,
-    fecha:  parseFloat(document.getElementById('f-fecha').value)  || 0,
-    perd:   parseFloat(document.getElementById('f-perd').value)   || 0,
-  };
-
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Salvando…';
-
-  const error = await upsertEntry(entry);
-
-  btn.disabled = false;
-  btn.textContent = 'Salvar registro';
-
-  if (error) {
-    showAlert('Erro ao salvar: ' + error.message, 'error');
-    return;
-  }
-
-  showAlert('Registro salvo com sucesso!', 'success');
-  ['f-invest','f-leads','f-ligas','f-agend','f-comp','f-pitch','f-fecha','f-perd']
-    .forEach(id => document.getElementById(id).value = '');
-}
-
-async function deleteEntry(date) {
-  if (!confirm('Excluir o registro de ' + date + '?')) return;
-  const error = await removeEntry(date);
-  if (error) { alert('Erro ao excluir: ' + error.message); return; }
-  renderHist();
-}
-
-// ── Calculations ─────────────────────────────────────────────────────────────
-function filterByPeriod(entries, period) {
-  if (period === 'tudo') return entries;
-  const days = period === 'semana' ? 7 : period === 'quinzena' ? 15 : 30;
-  const cutoff = new Date(Date.now() - days * 86400000);
-  return entries.filter(e => new Date(e.date) >= cutoff);
-}
-
-const sum = (arr, k) => arr.reduce((a, e) => a + (e[k] || 0), 0);
-const pct = (a, b) => b ? Math.round((a / b) * 100) : null;
-const fmt = n => n === null ? '—' : n + '%';
-const brl = n => 'R$' + Math.round(n).toLocaleString('pt-BR');
-
-function convColor(n, lo, hi) {
-  if (n === null) return '';
-  if (n >= hi) return 'conv-good';
-  if (n >= lo) return 'conv-warn';
-  return 'conv-bad';
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function setPeriod(p, el) {
-  currentPeriod = p;
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderDash();
-}
-
-async function renderDash() {
-  const el = document.getElementById('dash-content');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const all = await loadEntries();
-  const entries = filterByPeriod(all, currentPeriod);
-
-  if (!entries.length) {
-    el.innerHTML = '<div class="card"><div class="empty">Nenhum registro no período selecionado.<br>Adicione dados na aba "Registro diário".</div></div>';
-    return;
-  }
-
-  const invest = sum(entries,'invest'), leads = sum(entries,'leads'), ligas = sum(entries,'ligas');
-  const agend  = sum(entries,'agend'),  comp  = sum(entries,'comp'),  pitch = sum(entries,'pitch');
-  const fecha  = sum(entries,'fecha');
-  const cpl    = leads ? invest / leads : 0;
-  const cpa    = fecha ? invest / fecha : 0;
-  const ltv    = 5250 * 3;
-  const roi    = cpa ? Math.round(((ltv - cpa) / cpa) * 100) : null;
-  const roiColor = roi === null ? 'inherit' : roi > 100 ? 'var(--green)' : roi > 0 ? 'var(--amber)' : 'var(--red)';
-
-  const convs = [
-    { lbl:'Lead → ligação',      v:pct(ligas,leads), lo:60, hi:80 },
-    { lbl:'Ligação → agend.',    v:pct(agend,ligas), lo:20, hi:35 },
-    { lbl:'Agend. → comparec.',  v:pct(comp,agend),  lo:50, hi:70 },
-    { lbl:'Comparec. → pitch',   v:pct(pitch,comp),  lo:70, hi:90 },
-    { lbl:'Pitch → fechamento',  v:pct(fecha,pitch), lo:15, hi:30 },
-    { lbl:'Lead → cliente',      v:pct(fecha,leads), lo:1,  hi:3  },
-  ];
-
-  el.innerHTML = `
-    <div class="card">
-      <div class="section-label">Visão geral do período</div>
-      <div class="grid4" style="margin-bottom:1rem;">
-        <div class="mcard"><div class="lbl">Investimento</div><div class="val">${brl(invest)}</div></div>
-        <div class="mcard"><div class="lbl">Leads gerados</div><div class="val">${Math.round(leads)}</div></div>
-        <div class="mcard"><div class="lbl">Fechamentos</div><div class="val">${Math.round(fecha)}</div></div>
-        <div class="mcard"><div class="lbl">ROI tráfego</div><div class="val" style="color:${roiColor}">${roi === null ? '—' : roi + '%'}</div></div>
+    <div class="hero-content">
+      <div class="hero-tag">
+        <div class="hero-tag-dot"></div>
+        Sistema de Visitas Garantidas™
       </div>
-      <div class="grid3">
-        <div class="mcard"><div class="lbl">Custo por lead</div><div class="val">${cpl ? brl(cpl) : '—'}</div></div>
-        <div class="mcard"><div class="lbl">CAC</div><div class="val">${cpa ? brl(cpa) : '—'}</div><div class="sub">custo por cliente</div></div>
-        <div class="mcard"><div class="lbl">LTV estimado (3m)</div><div class="val">${brl(ltv)}</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-label">Conversões por etapa</div>
-      <div class="grid3">
-        ${convs.map(c => `
-          <div class="mcard">
-            <div class="lbl">${c.lbl}</div>
-            <div class="val ${convColor(c.v, c.lo, c.hi)}">${fmt(c.v)}</div>
-          </div>`).join('')}
-      </div>
-      <p style="font-size:11px;color:var(--text-tertiary);margin-top:.75rem;">
-        Verde = acima do benchmark &nbsp;|&nbsp; Amarelo = atenção &nbsp;|&nbsp; Vermelho = abaixo do esperado
+      <h1 class="hero-headline">
+        Seu stand<br/>cheio de<br/><em>compradores</em><br/>reais.
+      </h1>
+      <p class="hero-sub">
+        Transformamos anúncios em visitas agendadas. Do clique até o cliente sentado na cadeira — tudo automatizado, tudo mensurável.
       </p>
-    </div>
-    <div class="card">
-      <div class="section-label">Evolução diária</div>
-      <div class="chart-wrap"><canvas id="chart-evo"></canvas></div>
-      <div class="legend">
-        <span><span class="legend-dot" style="background:#85B7EB;"></span>Leads</span>
-        <span><span class="legend-dot" style="background:#1D9E75;"></span>Fechamentos</span>
+      <div class="hero-cta-group">
+        <a href="#cta-final" class="btn-primary">Quero Visitas Garantidas</a>
+        <a href="#cases" class="btn-secondary">
+          Ver casos de sucesso
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
       </div>
     </div>
-  `;
-
-  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-  chartInstance = new Chart(document.getElementById('chart-evo'), {
-    type: 'bar',
-    data: {
-      labels: entries.map(e => e.date.slice(5)),
-      datasets: [
-        { label:'Leads',       data: entries.map(e => e.leads), backgroundColor:'#85B7EB', borderRadius:3 },
-        { label:'Fechamentos', data: entries.map(e => e.fecha), backgroundColor:'#1D9E75', borderRadius:3 },
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display:false } },
-      scales: {
-        x: { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
-        y: { ticks:{ font:{size:11} }, grid:{ color:'rgba(128,128,128,0.1)' } }
-      }
-    }
-  });
-}
-
-async function renderHist() {
-  const el = document.getElementById('hist-content');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const entries = await loadEntries();
-  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
-
-  if (!sorted.length) {
-    el.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece pelo "Registro diário".</div>';
-    return;
-  }
-
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Data</th><th>Invest.</th><th>Leads</th><th>Ligas</th>
-          <th>Agend.</th><th>Comp.</th><th>Pitch</th>
-          <th style="color:var(--green);">Fecha.</th>
-          <th style="color:var(--red);">Perd.</th>
-          <th>CAC</th><th></th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sorted.map(e => {
-          const cac = e.fecha ? brl(e.invest / e.fecha) : '—';
-          return `<tr>
-            <td>${e.date}</td>
-            <td>${brl(e.invest)}</td>
-            <td>${e.leads}</td><td>${e.ligas}</td><td>${e.agend}</td>
-            <td>${e.comp}</td><td>${e.pitch}</td>
-            <td style="color:var(--green);font-weight:500;">${e.fecha}</td>
-            <td style="color:var(--red);">${e.perd}</td>
-            <td>${cac}</td>
-            <td><button class="del-btn" onclick="deleteEntry('${e.date}')">excluir</button></td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById('entry-date').value = new Date().toISOString().slice(0, 10);
-</script>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-number">R$1B</div>
+        <div class="hero-stat-label">VGV gerado em 2026</div>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">24h</div>
+        <div class="hero-stat-label">Atendimento da ISA</div>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">45d</div>
+        <div class="hero-stat-label">Para ver resultados</div>
+      </div>
+    </div>
+  </section>
+  <!-- TICKER -->
+  <div class="ticker-wrapper">
+    <div class="ticker-track">
+      <div class="ticker-item">Gestão de Tráfego <span>✦</span></div>
+      <div class="ticker-item">CRM Proprietário <span>✦</span></div>
+      <div class="ticker-item">IA 24/7 <span>✦</span></div>
+      <div class="ticker-item">SDR Especializado <span>✦</span></div>
+      <div class="ticker-item">Agendamento Automático <span>✦</span></div>
+      <div class="ticker-item">Dashboard em Tempo Real <span>✦</span></div>
+      <div class="ticker-item">WhatsApp + E-mail + Ligação <span>✦</span></div>
+      <div class="ticker-item">Visitas Garantidas™ <span>✦</span></div>
+      <div class="ticker-item">Gestão de Tráfego <span>✦</span></div>
+      <div class="ticker-item">CRM Proprietário <span>✦</span></div>
+      <div class="ticker-item">IA 24/7 <span>✦</span></div>
+      <div class="ticker-item">SDR Especializado <span>✦</span></div>
+      <div class="ticker-item">Agendamento Automático <span>✦</span></div>
+      <div class="ticker-item">Dashboard em Tempo Real <span>✦</span></div>
+      <div class="ticker-item">WhatsApp + E-mail + Ligação <span>✦</span></div>
+      <div class="ticker-item">Visitas Garantidas™ <span>✦</span></div>
+    </div>
+  </div>
+  <!-- PROBLEMA -->
+  <section id="problema">
+    <div class="problema-inner">
+      <div>
+        <div class="section-tag">O Problema</div>
+        <h2 class="section-title">A <em>caixa preta</em><br/>das suas vendas.</h2>
+        <div class="problema-dores reveal">
+          <div class="dor-item">
+            <div class="dor-icon">🕳️</div>
+            <div>
+              <div class="dor-title">Lead Lixo</div>
+              <div class="dor-desc">O time comercial reclama todo dia que "o lead do marketing é curioso, sem dinheiro". Você gasta em tráfego e não vê retorno.</div>
+            </div>
+          </div>
+          <div class="dor-item">
+            <div class="dor-icon">🏚️</div>
+            <div>
+              <div class="dor-title">Stand Vazio no Sábado</div>
+              <div class="dor-desc">Agendaram 10 visitas, você preparou tudo. Apareceram 2. O no-show destrói a moral do time e queima o investimento.</div>
+            </div>
+          </div>
+          <div class="dor-item">
+            <div class="dor-icon">📊</div>
+            <div>
+              <div class="dor-title">Cegueira de ROI</div>
+              <div class="dor-desc">Você sabe quanto gasta no Facebook. Mas não sabe qual campanha gerou a última venda assinada. O dinheiro some no ralo.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="problema-quote reveal">
+        <div class="quote-card">
+          <p class="quote-text">
+            "Se eu não vender 30% desse estoque até dezembro, meu fluxo de caixa da obra vai estourar."
+          </p>
+          <div class="quote-attr">— A voz que todo diretor comercial tem na cabeça</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- SOLUÇÃO -->
+  <section id="solucao" style="padding: 0;">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 120px 60px;">
+      <div class="solucao-header reveal">
+        <div>
+          <div class="section-tag">O Método</div>
+          <h2 class="section-title">3 passos que<br/>transformam cliques<br/>em <em>visitas reais.</em></h2>
+        </div>
+        <p class="solucao-desc">
+          Do anúncio ao cliente sentado na cadeira, controlamos todo o processo. Você só precisa fazer o que sabe: <strong style="color: var(--white)">vender.</strong>
+        </p>
+      </div>
+      <div class="steps-grid reveal">
+        <div class="step-card">
+          <span class="step-number">01</span>
+          <div class="step-title">Captação</div>
+          <p class="step-desc">Criamos campanhas cirúrgicas que falam diretamente com o comprador ideal do seu empreendimento.</p>
+          <ul class="step-list">
+            <li>Estudo profundo do empreendimento</li>
+            <li>Criação de anúncios de alta conversão</li>
+            <li>Campanhas no Facebook e Instagram</li>
+            <li>Otimização contínua de custo por lead</li>
+          </ul>
+        </div>
+        <div class="step-card">
+          <span class="step-number">02</span>
+          <div class="step-title">Qualificação</div>
+          <p class="step-desc">Separamos automaticamente quem tem real intenção e capacidade de compra de quem só está curioso.</p>
+          <ul class="step-list">
+            <li>Landing pages que educam e filtram</li>
+            <li>Formulários inteligentes de qualificação</li>
+            <li>Validação automática de dados</li>
+            <li>Filtro por renda, interesse e timing</li>
+          </ul>
+        </div>
+        <div class="step-card">
+          <span class="step-number">03</span>
+          <div class="step-title">Agendamento</div>
+          <p class="step-desc">Nossa IA e time de SDR agendam visitas presenciais. O cliente chega comprometido, pronto para comprar.</p>
+          <ul class="step-list">
+            <li>Atendimento em até 5 minutos</li>
+            <li>Confirmação e lembrete automáticos</li>
+            <li>SDR humano para projetos maiores</li>
+            <li>Visita com compromisso real</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- CRM -->
+  <section id="crm">
+    <div class="crm-inner">
+      <div class="crm-header reveal">
+        <div>
+          <div class="section-tag">Tecnologia</div>
+          <h2 class="section-title">CRM Moon —<br/><em>sua central</em><br/>de comando.</h2>
+          <p style="margin-top: 24px; font-size: 15px; color: var(--white-dim); line-height: 1.8;">
+            Um dashboard proprietário onde você acompanha em tempo real cada lead, cada visita, cada real investido. Fim da cegueira de ROI.
+          </p>
+        </div>
+        <div class="crm-mockup">
+          <div class="crm-mockup-bar">
+            <div class="crm-dot crm-dot-r"></div>
+            <div class="crm-dot crm-dot-y"></div>
+            <div class="crm-dot crm-dot-g"></div>
+            <span style="font-size:11px; color: var(--white-dim); margin-left: 8px;">CRM Moon — Dashboard</span>
+          </div>
+          <div class="crm-screen">
+            <div class="crm-metric-row">
+              <div class="crm-metric">
+                <div class="crm-metric-val">2.65K</div>
+                <div class="crm-metric-lbl">Leads</div>
+              </div>
+              <div class="crm-metric">
+                <div class="crm-metric-val">347</div>
+                <div class="crm-metric-lbl">Visitas</div>
+              </div>
+              <div class="crm-metric">
+                <div class="crm-metric-val">33</div>
+                <div class="crm-metric-lbl">Vendas</div>
+              </div>
+              <div class="crm-metric">
+                <div class="crm-metric-val" style="font-size:18px">R$3.7M</div>
+                <div class="crm-metric-lbl">VGV</div>
+              </div>
+            </div>
+            <div class="crm-bar-chart">
+              <div class="crm-bar-title">Leads por semana</div>
+              <div class="crm-bars">
+                <div class="crm-bar" style="height:35%"></div>
+                <div class="crm-bar" style="height:55%"></div>
+                <div class="crm-bar" style="height:45%"></div>
+                <div class="crm-bar" style="height:70%"></div>
+                <div class="crm-bar" style="height:60%"></div>
+                <div class="crm-bar active" style="height:85%"></div>
+                <div class="crm-bar" style="height:90%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="crm-features reveal">
+        <div class="crm-feat">
+          <div class="crm-feat-icon">📡</div>
+          <div>
+            <div class="crm-feat-title">Métricas em Tempo Real</div>
+            <div class="crm-feat-desc">Dashboard ao vivo com todos os KPIs comerciais</div>
+          </div>
+        </div>
+        <div class="crm-feat">
+          <div class="crm-feat-icon">💰</div>
+          <div>
+            <div class="crm-feat-title">ROI Transparente</div>
+            <div class="crm-feat-desc">Saiba exatamente qual campanha gerou qual venda</div>
+          </div>
+        </div>
+        <div class="crm-feat">
+          <div class="crm-feat-icon">🤖</div>
+          <div>
+            <div class="crm-feat-title">Distribuição Automática</div>
+            <div class="crm-feat-desc">Leads distribuídos para o corretor certo automaticamente</div>
+          </div>
+        </div>
+        <div class="crm-feat">
+          <div class="crm-feat-icon">📞</div>
+          <div>
+            <div class="crm-feat-title">VOIP Integrado</div>
+            <div class="crm-feat-desc">Ligações, WhatsApp e e-mail em um só lugar</div>
+          </div>
+        </div>
+        <div class="crm-feat">
+          <div class="crm-feat-icon">📱</div>
+          <div>
+            <div class="crm-feat-title">App no Celular</div>
+            <div class="crm-feat-desc">Acompanhe sua operação de qualquer lugar, 24h</div>
+          </div>
+        </div>
+        <div class="crm-feat">
+          <div class="crm-feat-icon">⚡</div>
+          <div>
+            <div class="crm-feat-title">Automações Completas</div>
+            <div class="crm-feat-desc">Follow-up automático via WhatsApp, e-mail e SMS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ISA -->
+  <section id="isa">
+    <div class="isa-inner">
+      <div class="isa-chat reveal">
+        <div class="isa-chat-header">
+          <div class="isa-avatar">ISA</div>
+          <div>
+            <div class="isa-chat-name">ISA — Vendedora Digital</div>
+            <div class="isa-status">Online agora</div>
+          </div>
+        </div>
+        <div class="isa-chat-body">
+          <div class="msg msg-bot">
+            Olá! Vi que você tem interesse no Residencial Majestic. Posso te ajudar a agendar uma visita? 😊
+            <div class="msg-time">14:32</div>
+          </div>
+          <div class="msg msg-user">
+            Sim, tenho interesse. Mas queria saber sobre o valor das parcelas.
+            <div class="msg-time">14:33</div>
+          </div>
+          <div class="msg msg-bot">
+            Claro! Para 3 dormitórios, a entrada é de 30% e o saldo em até 120 meses. Qual é a sua renda familiar aproximada para eu te passar a simulação certa?
+            <div class="msg-time">14:33</div>
+          </div>
+          <div class="msg msg-user">
+            Em torno de R$ 8.000 mensais.
+            <div class="msg-time">14:35</div>
+          </div>
+          <div class="msg msg-bot">
+            Perfeito! Você se encaixa no perfil ideal do empreendimento. Temos visitas disponíveis sábado às 10h ou 14h. Qual prefere?
+            <div class="msg-time">14:35</div>
+          </div>
+          <div class="msg msg-user">
+            Sábado às 10h 👍
+            <div class="msg-time">14:36</div>
+          </div>
+          <div class="msg msg-bot">
+            Ótimo! Visita agendada para sábado às 10h. Enviei a confirmação para seu WhatsApp. Te esperamos! 🏢
+            <div class="msg-time">14:36</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="section-tag">Inteligência Artificial</div>
+        <h2 class="section-title">ISA —<br/>sua vendedora<br/>que nunca <em>dorme.</em></h2>
+        <div class="isa-features">
+          <div class="isa-feat">
+            <div class="isa-feat-icon">⏰</div>
+            <div>
+              <div class="isa-feat-title">Resposta em 1 minuto, 24h por dia</div>
+              <div class="isa-feat-desc">Atende quando o interesse está quente. Nenhum lead perdido por horário ou demora no atendimento.</div>
+            </div>
+          </div>
+          <div class="isa-feat">
+            <div class="isa-feat-icon">🧠</div>
+            <div>
+              <div class="isa-feat-title">Especialista no seu produto</div>
+              <div class="isa-feat-desc">Treinada com todas as informações do empreendimento. Responde dúvidas, qualifica e converte como um SDR sênior.</div>
+            </div>
+          </div>
+          <div class="isa-feat">
+            <div class="isa-feat-icon">🗓️</div>
+            <div>
+              <div class="isa-feat-title">Agenda direto na sua agenda</div>
+              <div class="isa-feat-desc">Confirma presença, envia lembretes e reduz drásticamente o no-show. Visitas com compromisso real.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- CASES -->
+  <section id="cases">
+    <div class="cases-inner">
+      <div class="cases-header reveal">
+        <div class="section-tag">Resultados Reais</div>
+        <h2 class="section-title">Quem <em>confiou</em><br/>no método.</h2>
+      </div>
+      <div class="cases-grid reveal">
+        <div class="case-card">
+          <div class="case-img-placeholder">🏢</div>
+          <div class="case-body">
+            <div class="case-tag">Incorporadora · Litoral Norte</div>
+            <div class="case-title">Elevate — Majestic</div>
+            <p class="case-desc">
+              Meta de lançar 30 prédios em 10 anos. Implementamos o sistema completo e antes mesmo do stand de vendas ficar pronto, 60% do empreendimento já estava reservado.
+            </p>
+            <div class="case-metrics">
+              <div>
+                <div class="case-metric-val">60%</div>
+                <div class="case-metric-lbl">Vendido pré-lançamento</div>
+              </div>
+              <div>
+                <div class="case-metric-val">45d</div>
+                <div class="case-metric-lbl">Para o resultado</div>
+              </div>
+              <div>
+                <div class="case-metric-val">100%</div>
+                <div class="case-metric-lbl">Automatizado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="case-card">
+          <div class="case-img-placeholder">🌿</div>
+          <div class="case-body">
+            <div class="case-tag">Loteadora · Nacional</div>
+            <div class="case-title">Momentum Incorporadora</div>
+            <p class="case-desc">
+              Maior loteadora do Brasil. Já tinham marketing interno forte, mas métricas perdidas. Em 45 dias superamos o resultado de todo o time interno. Hoje investem R$400k/mês com clareza total.
+            </p>
+            <div class="case-metrics">
+              <div>
+                <div class="case-metric-val">143</div>
+                <div class="case-metric-lbl">Visitas geradas</div>
+              </div>
+              <div>
+                <div class="case-metric-val">41</div>
+                <div class="case-metric-lbl">Vendas fechadas</div>
+              </div>
+              <div>
+                <div class="case-metric-val">R$8.9M</div>
+                <div class="case-metric-lbl">VGV gerado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- OFERTA -->
+  <section id="oferta">
+    <div class="oferta-inner reveal">
+      <div class="section-tag" style="justify-content: center;">
+        <span></span>Investimento
+      </div>
+      <h2 class="section-title" style="margin-bottom: 16px;">Uma parceria. <em>Um objetivo.</em></h2>
+      <p style="color: var(--white-dim); font-size: 15px;">Abordagem 100% customizada para a realidade do seu empreendimento.</p>
+      <div class="oferta-card">
+        <div class="oferta-price-label">Projeto completo — 3 meses</div>
+        <div class="oferta-price">R$10.500</div>
+        <div class="oferta-price-sub">pagamento único · sem taxas ocultas · sem surpresas</div>
+        <div class="oferta-includes">
+          <div class="oferta-item">Gestão completa de tráfego pago</div>
+          <div class="oferta-item">CRM Moon white-label configurado</div>
+          <div class="oferta-item">Agente ISA treinado no seu produto</div>
+          <div class="oferta-item">Edição de vídeo e criativos</div>
+          <div class="oferta-item">Copywriting especializado em imóveis</div>
+          <div class="oferta-item">Análise e relatório de campanhas</div>
+          <div class="oferta-item">Automações de WhatsApp e e-mail</div>
+          <div class="oferta-item">Dashboard com métricas em tempo real</div>
+          <div class="oferta-item">App mobile para gestão</div>
+          <div class="oferta-item">Time SDR (projetos selecionados)</div>
+        </div>
+        <a href="#cta-final" class="btn-primary" style="display: inline-block;">Quero Visitas Garantidas</a>
+        <div class="oferta-guarantee">
+          ✦ Modelo de parceria com alinhamento de resultados
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- FAQ -->
+  <div id="faq">
+    <div class="faq-inner">
+      <div class="faq-header reveal">
+        <div class="section-tag" style="justify-content: center;"><span></span>Dúvidas Frequentes</div>
+        <h2 class="section-title" style="margin-top: 16px;">Perguntas <em>que todo<br/>diretor faz.</em></h2>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item">
+          <summary class="faq-question">
+            Como vou controlar se o SDR está trabalhando?
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="faq-answer">Tudo fica registrado no CRM Moon em tempo real. Você acessa pelo app no celular e vê cada ligação feita, cada mensagem enviada, cada visita agendada. Não há como esconder produtividade — ou falta dela.</p>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-question">
+            Vocês entregam visita mesmo ou só planilha de leads?
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="faq-answer">Entregamos clientes agendados, com confirmação de presença. Nossa missão termina quando o comprador senta na cadeira na frente do seu corretor. Não vendemos leads — vendemos o sistema completo até a visita.</p>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-question">
+            Quanto tempo para ver resultados?
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="faq-answer">Os primeiros leads qualificados chegam nos primeiros dias. Visitas agendadas normalmente em 2 semanas. Em 45 dias você tem dados suficientes para comparar com o que fazia antes — e os números falam por si.</p>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-question">
+            Preciso desligar minha equipe atual de marketing?
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="faq-answer">Não. Como no case da Momentum, implementamos o sistema sem alterar o processo atual. Atuamos em paralelo e os números mostram o resultado. Aí você decide como reorganizar sua operação com base em dados reais.</p>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-question">
+            O que acontece depois dos 3 meses?
+            <span class="faq-icon">+</span>
+          </summary>
+          <p class="faq-answer">Com o empreendimento validado e a máquina rodando, discutimos a continuidade da parceria. Nosso modelo é customizado — adaptamos a estrutura ao ritmo de vendas que o seu produto exige.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+  <!-- CTA FINAL -->
+  <section id="cta-final">
+    <div class="cta-final-bg"></div>
+    <div class="cta-final-content reveal">
+      <div class="section-tag" style="justify-content: center;"><span></span>Próximo passo</div>
+      <h2 class="cta-final-title">Chega de stand <em>vazio.</em><br/>Vamos conversar.</h2>
+      <p class="cta-final-sub">
+        Reserve uma reunião de diagnóstico gratuita. Em 30 minutos mapeamos o gap entre o seu marketing atual e o seu potencial real de vendas.
+      </p>
+      <a href="https://wa.me/5500000000000?text=Olá!%20Quero%20conhecer%20o%20Sistema%20de%20Visitas%20Garantidas" class="btn-primary" target="_blank">
+        Agendar Diagnóstico Gratuito
+      </a>
+      <p style="margin-top: 20px; font-size: 12px; color: var(--white-dim);">Sem compromisso · Sem pressão · 100% focado no seu empreendimento</p>
+    </div>
+  </section>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-copy">© 2026 Digital Moon. Todos os direitos reservados.</div>
+    <div class="footer-brand">DIGITAL MOON</div>
+    <div class="footer-copy">Sistema de Visitas Garantidas™</div>
+  </footer>
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    // Stagger reveal children
+    document.querySelectorAll('.steps-grid .step-card, .crm-features .crm-feat, .cases-grid .case-card').forEach((el, i) => {
+      el.style.transitionDelay = `${i * 0.1}s`;
+    });
+  </script>
 </body>
 </html>

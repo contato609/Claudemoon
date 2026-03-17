@@ -3,629 +3,1029 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tracker Funil Comercial — Digital Moon</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Digital Moon — Sistema de Visitas Garantidas™</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f3;
-    --bg-tertiary: #eeede8;
-    --text-primary: #1a1a18;
-    --text-secondary: #5f5e5a;
-    --text-tertiary: #888780;
-    --border: rgba(0,0,0,0.12);
-    --border-md: rgba(0,0,0,0.2);
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --accent: #378ADD;
-    --green: #1D9E75;
-    --amber: #BA7517;
-    --red: #E24B4A;
-    --green-bg: #EAF3DE;
-    --green-text: #27500A;
-    --amber-bg: #FAEEDA;
-    --amber-text: #633806;
-    --red-bg: #FCEBEB;
-    --red-text: #791F1F;
-    --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg-primary: #1e1e1c;
-      --bg-secondary: #2a2a28;
-      --bg-tertiary: #333331;
-      --text-primary: #f0efe8;
-      --text-secondary: #b4b2a9;
-      --text-tertiary: #888780;
-      --border: rgba(255,255,255,0.1);
-      --border-md: rgba(255,255,255,0.18);
-    }
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  .app-header {
-    background: var(--bg-primary);
-    border-bottom: 0.5px solid var(--border);
-    padding: 0 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-  .app-nav {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-  }
-  .nav-btn {
-    font-size: 13px;
-    padding: 6px 14px;
-    border-radius: var(--radius-md);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .nav-btn:hover { background: var(--bg-secondary); }
-  .nav-btn.active {
-    background: var(--blue-bg);
-    color: var(--blue-text);
-    font-weight: 500;
-  }
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-  .page { display: none; }
-  .page.active { display: block; }
-  .card {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-  }
-  .card-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-tertiary);
-    margin: 1.25rem 0 0.75rem;
-    padding-bottom: 6px;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
-  @media(max-width: 600px) {
-    .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  }
-  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
-  .field label { font-size: 12px; color: var(--text-secondary); }
-  input[type="number"], input[type="date"] {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 14px;
-    border: 0.5px solid var(--border-md);
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    outline: none;
-    transition: border-color 0.15s;
-    font-family: inherit;
-  }
-  input[type="number"]:focus, input[type="date"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
-  }
-  .btn-primary {
-    width: 100%;
-    padding: 11px;
-    font-size: 14px;
-    font-weight: 500;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: opacity 0.15s;
-    font-family: inherit;
-  }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .mcard {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    padding: 12px;
-  }
-  .mcard .lbl {
-    font-size: 11px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
-  .mcard .val {
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-  .mcard .sub {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    margin-top: 3px;
-  }
-  .period-tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .ptab {
-    font-size: 12px;
-    padding: 5px 14px;
-    border-radius: 999px;
-    border: 0.5px solid var(--border-md);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .ptab:hover { background: var(--bg-secondary); }
-  .ptab.active {
-    background: var(--blue-bg);
-    color: var(--blue-text);
-    border-color: transparent;
-    font-weight: 500;
-  }
-  .conv-good { color: var(--green); font-weight: 500; }
-  .conv-warn { color: var(--amber); font-weight: 500; }
-  .conv-bad { color: var(--red); font-weight: 500; }
-  .alert {
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    display: none;
-  }
-  .alert.show { display: block; }
-  .alert-success { background: var(--green-bg); color: var(--green-text); }
-  .alert-error { background: var(--red-bg); color: var(--red-text); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  th {
-    text-align: left;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    padding: 8px 10px;
-    border-bottom: 0.5px solid var(--border);
-    white-space: nowrap;
-  }
-  td {
-    padding: 8px 10px;
-    border-bottom: 0.5px solid var(--border);
-    color: var(--text-primary);
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg-secondary); }
-  .del-btn {
-    font-size: 11px;
-    padding: 3px 8px;
-    cursor: pointer;
-    color: var(--red-text);
-    border: 0.5px solid var(--red);
-    border-radius: var(--radius-md);
-    background: transparent;
-    font-family: inherit;
-    transition: background 0.15s;
-  }
-  .del-btn:hover { background: var(--red-bg); }
-  .empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-tertiary);
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .chart-wrap {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    margin: 1rem 0 0.5rem;
-  }
-  .legend {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-  .legend span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-  .tbl-wrap { overflow-x: auto; }
-  .page-title {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
-  }
-  .loading {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-tertiary);
-    font-size: 13px;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-dim: rgba(201,168,76,0.15);
+  --dark: #0A0A08;
+  --dark-2: #111110;
+  --dark-3: #1A1A17;
+  --dark-4: #242420;
+  --text: #F0EDE4;
+  --text-muted: rgba(240,237,228,0.55);
+  --text-dim: rgba(240,237,228,0.3);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', sans-serif;
+}
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--dark);
+  color: var(--text);
+  font-family: var(--sans);
+}
+/* ── SLIDE ENGINE ── */
+.deck { width: 100vw; height: 100vh; position: relative; }
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 5vw;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  overflow: hidden;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+}
+/* ── BACKGROUNDS ── */
+.bg-cover {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(201,168,76,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(201,168,76,0.07) 0%, transparent 60%),
+    linear-gradient(160deg, #0f0f0c 0%, #0A0A08 50%, #0d0c09 100%);
+}
+.bg-dark {
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 50%, rgba(201,168,76,0.06) 0%, transparent 60%),
+    linear-gradient(135deg, #111110 0%, #0A0A08 100%);
+}
+.bg-accent {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(201,168,76,0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 90% 100%, rgba(201,168,76,0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #121109 0%, #0A0A08 100%);
+}
+.bg-case {
+  background:
+    radial-gradient(ellipse 80% 60% at 0% 50%, rgba(201,168,76,0.1) 0%, transparent 55%),
+    linear-gradient(120deg, #0e0e0b 0%, #0A0A08 100%);
+}
+/* ── NOISE OVERLAY ── */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+.slide > * { position: relative; z-index: 1; }
+/* ── DECORATIVE LINES ── */
+.deco-line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  height: 0.5px;
+  opacity: 0.3;
+}
+.deco-line-v {
+  position: absolute;
+  background: linear-gradient(180deg, transparent, var(--gold), transparent);
+  width: 0.5px;
+  opacity: 0.2;
+}
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-family: var(--sans);
+  font-size: clamp(9px, 1.1vw, 12px);
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+.display {
+  font-family: var(--serif);
+  font-size: clamp(42px, 7vw, 96px);
+  font-weight: 300;
+  line-height: 1.0;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.display em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+.headline {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 58px);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--text);
+}
+.headline em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+.subhead {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.5vw, 34px);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--text);
+}
+.body-text {
+  font-family: var(--sans);
+  font-size: clamp(13px, 1.5vw, 17px);
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--text-muted);
+  max-width: 52ch;
+}
+.body-text strong {
+  color: var(--text);
+  font-weight: 500;
+}
+/* ── GOLD DIVIDER ── */
+.divider {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 1.5rem 0;
+}
+.divider-full {
+  width: 100%;
+  height: 0.5px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+  margin: 1.5rem 0;
+}
+/* ── STAT BLOCKS ── */
+.stat-row {
+  display: flex;
+  gap: 4vw;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-number {
+  font-family: var(--serif);
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--gold-light);
+}
+.stat-label {
+  font-size: clamp(11px, 1.2vw, 13px);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* ── STEP CARDS ── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: 900px;
+}
+.step-card {
+  background: var(--dark-3);
+  border: 0.5px solid rgba(201,168,76,0.12);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.step-card:hover::before { opacity: 1; }
+.step-number {
+  font-family: var(--serif);
+  font-size: clamp(48px, 5vw, 72px);
+  font-weight: 300;
+  color: rgba(201,168,76,0.12);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+.step-title {
+  font-family: var(--serif);
+  font-size: clamp(16px, 2vw, 24px);
+  font-weight: 400;
+  color: var(--gold-light);
+  margin-bottom: 0.75rem;
+}
+.step-body {
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+/* ── FEATURE LIST ── */
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  font-size: clamp(13px, 1.5vw, 16px);
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.feature-list li::before {
+  content: '◆';
+  font-size: 6px;
+  color: var(--gold);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.feature-list li strong { color: var(--text); font-weight: 500; }
+/* ── CASE CARD ── */
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  max-width: 860px;
+}
+.case-card {
+  background: var(--dark-3);
+  border: 0.5px solid rgba(201,168,76,0.1);
+  padding: 2.5rem 2.5rem;
+  position: relative;
+}
+.case-tag {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+.case-name {
+  font-family: var(--serif);
+  font-size: clamp(20px, 2.5vw, 32px);
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+}
+.case-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.case-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid rgba(201,168,76,0.1);
+}
+.case-stat:last-child { border-bottom: none; padding-bottom: 0; }
+.case-stat-label {
+  font-size: clamp(10px, 1.1vw, 12px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.case-stat-value {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.2vw, 28px);
+  font-weight: 400;
+  color: var(--gold-light);
+}
+.case-highlight {
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-style: italic;
+  font-family: var(--serif);
+}
+/* ── PAIN CARDS ── */
+.pain-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: 100%;
+  max-width: 900px;
+}
+.pain-card {
+  background: var(--dark-3);
+  border: 0.5px solid rgba(201,168,76,0.08);
+  padding: 2rem 1.75rem;
+}
+.pain-icon {
+  font-size: 28px;
+  margin-bottom: 1rem;
+  display: block;
+}
+.pain-title {
+  font-family: var(--serif);
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+.pain-body {
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+/* ── LOGO ── */
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2.5rem;
+}
+.logo-icon {
+  width: 44px;
+  height: 44px;
+}
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.logo-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+.logo-tagline {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 400;
+}
+/* ── TWO-COL LAYOUT ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6vw;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+}
+.two-col-wide {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 6vw;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+}
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+  background: rgba(10,10,8,0.7);
+  backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(201,168,76,0.15);
+  border-radius: 99px;
+  padding: 10px 20px;
+}
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 0.5px solid rgba(201,168,76,0.3);
+}
+.nav-dot.active {
+  background: var(--gold);
+  width: 20px;
+  border-radius: 3px;
+}
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 2px 6px;
+  font-family: inherit;
+}
+.nav-btn:hover { opacity: 1; }
+.nav-counter {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  min-width: 36px;
+  text-align: center;
+}
+/* ── SLIDE-SPECIFIC ── */
+/* CAPA */
+#s0 .content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#s0 .moon-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 0.5px solid rgba(201,168,76,0.1);
+}
+/* INVESTIMENTO */
+.invest-box {
+  background: var(--dark-3);
+  border: 1px solid rgba(201,168,76,0.2);
+  padding: 2.5rem 3rem;
+  max-width: 520px;
+  width: 100%;
+  position: relative;
+}
+.invest-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.invest-price {
+  font-family: var(--serif);
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 300;
+  color: var(--gold-light);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.invest-period {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+.invest-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+.invest-items li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(12px, 1.3vw, 15px);
+  color: var(--text-muted);
+  font-weight: 300;
+}
+.invest-items li::before {
+  content: '';
+  width: 18px; height: 0.5px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.cta-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--dark);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  font-family: var(--sans);
+  transition: opacity 0.2s;
+}
+.cta-btn:hover { opacity: 0.88; }
+/* ── CRML FEATURES ── */
+.crm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  max-width: 760px;
+}
+.crm-item {
+  background: var(--dark-3);
+  border: 0.5px solid rgba(201,168,76,0.08);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.crm-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+.crm-text { display: flex; flex-direction: column; gap: 4px; }
+.crm-title {
+  font-family: var(--serif);
+  font-size: clamp(14px, 1.6vw, 18px);
+  font-weight: 400;
+  color: var(--text);
+}
+.crm-desc {
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+/* ── QUOTE ── */
+.quote-block {
+  border-left: 1px solid var(--gold);
+  padding-left: 2rem;
+  max-width: 600px;
+}
+.quote-text {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.5vw, 32px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.quote-attr {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+/* ── SLIDE ANIMATIONS ── */
+.slide.active .animate-up {
+  animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+.slide.active .animate-up:nth-child(2) { animation-delay: 0.1s; }
+.slide.active .animate-up:nth-child(3) { animation-delay: 0.2s; }
+.slide.active .animate-up:nth-child(4) { animation-delay: 0.3s; }
+.slide.active .animate-up:nth-child(5) { animation-delay: 0.4s; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide.active .animate-fade {
+  animation: fadeIn 0.8s ease both;
+}
+.slide.active .animate-fade:nth-child(2) { animation-delay: 0.15s; }
+.slide.active .animate-fade:nth-child(3) { animation-delay: 0.3s; }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* ── SLIDE-LEVEL LAYOUT HELPERS ── */
+.center { text-align: center; display: flex; flex-direction: column; align-items: center; width: 100%; }
+.left-aligned { align-items: flex-start; width: 100%; max-width: 1000px; }
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 1rem; }
+.gap-lg { gap: 2rem; }
+.gap-xl { gap: 3rem; }
+.flex-col { display: flex; flex-direction: column; }
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .steps, .pain-grid { grid-template-columns: 1fr; }
+  .case-grid { grid-template-columns: 1fr; }
+  .two-col, .two-col-wide { grid-template-columns: 1fr; gap: 2rem; }
+  .crm-grid { grid-template-columns: 1fr; }
+  .stat-row { gap: 2rem; }
+}
 </style>
 </head>
 <body>
-<header class="app-header">
-  <div class="logo">
-    <div class="logo-dot"></div>
-    Digital Moon — Funil Comercial
+<div class="deck" id="deck">
+  <!-- ══ SLIDE 0 — CAPA ══ -->
+  <div class="slide bg-cover active" id="s0">
+    <div style="position:absolute;width:600px;height:600px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.06);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div style="position:absolute;width:400px;height:400px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.08);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div style="position:absolute;width:200px;height:200px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.12);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div class="content center">
+      <div class="animate-up">
+        <svg class="logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 1.5rem;">
+          <path d="M22 4C12 4 4 12 4 22C4 32 12 40 22 40C22 40 14 32 14 22C14 12 22 4 22 4Z" fill="url(#g1)" opacity="0.9"/>
+          <path d="M26 8L26 22L32 30L38 22C38 14.3 32.7 8 26 8Z" fill="url(#g2)" opacity="0.6"/>
+          <circle cx="22" cy="8" r="2" fill="#C9A84C" opacity="0.8"/>
+          <circle cx="34" cy="12" r="1.5" fill="#C9A84C" opacity="0.5"/>
+          <circle cx="30" cy="6" r="1" fill="#C9A84C" opacity="0.4"/>
+          <defs>
+            <linearGradient id="g1" x1="4" y1="4" x2="22" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#E8C97A"/>
+              <stop offset="1" stop-color="#C9A84C"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="26" y1="8" x2="38" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#E8C97A" stop-opacity="0.8"/>
+              <stop offset="1" stop-color="#C9A84C" stop-opacity="0.3"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="animate-up">
+        <div class="eyebrow">Apresentação Comercial</div>
+      </div>
+      <div class="animate-up">
+        <div class="display" style="text-align:center;margin-bottom:1rem;">
+          Digital <em>Moon</em>
+        </div>
+      </div>
+      <div class="animate-up" style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2.5rem;">
+        <div style="height:0.5px;width:60px;background:linear-gradient(90deg,transparent,var(--gold));"></div>
+        <div style="font-size:clamp(11px,1.2vw,14px);letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);font-weight:400;">Sistema de Visitas Garantidas™</div>
+        <div style="height:0.5px;width:60px;background:linear-gradient(90deg,var(--gold),transparent);"></div>
+      </div>
+      <div class="animate-up">
+        <div class="body-text" style="text-align:center;max-width:48ch;">
+          Como transformamos investimento em tráfego em <strong>visitas confirmadas</strong> e vendas previsíveis para incorporadoras e loteadoras a nível Brasil.
+        </div>
+      </div>
+    </div>
+    <div class="deco-line" style="bottom:12%;left:5%;right:5%;"></div>
   </div>
-  <nav class="app-nav">
-    <button class="nav-btn active" onclick="switchTab('input',this)">Registro diário</button>
-    <button class="nav-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
-    <button class="nav-btn" onclick="switchTab('historico',this)">Histórico</button>
-  </nav>
-</header>
-<div class="container">
-  <!-- REGISTRO DIÁRIO -->
-  <div id="page-input" class="page active">
-    <div class="page-title">Registro diário</div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Entrada do dia</span>
-        <input type="date" id="entry-date" style="width:auto;font-size:13px;padding:6px 10px;">
+  <!-- ══ SLIDE 1 — O PROBLEMA ══ -->
+  <div class="slide bg-dark" id="s1">
+    <div class="left-aligned flex-col gap-xl">
+      <div class="flex-col gap-md animate-up">
+        <div class="eyebrow">O cenário atual</div>
+        <div class="headline">O dinheiro entra,<br>as vendas <em>não aparecem.</em></div>
+        <div class="divider"></div>
       </div>
-      <div id="alert-box" class="alert"></div>
-      <div class="section-label">Investimento e captação</div>
-      <div class="grid2">
-        <div class="field"><label>Investimento em tráfego (R$)</label><input type="number" id="f-invest" min="0" placeholder="0"></div>
-        <div class="field"><label>Leads gerados</label><input type="number" id="f-leads" min="0" placeholder="0"></div>
+      <div class="pain-grid animate-up">
+        <div class="pain-card">
+          <span class="pain-icon" style="font-size:22px;color:var(--gold);">◈</span>
+          <div class="pain-title">"O lead do marketing é ruim"</div>
+          <div class="pain-body">O time comercial culpa o marketing. O marketing culpa o comercial. Os leads chegam e somem sem atendimento rápido.</div>
+        </div>
+        <div class="pain-card">
+          <span class="pain-icon" style="font-size:22px;color:var(--gold);">◈</span>
+          <div class="pain-title">Stand vazio no sábado</div>
+          <div class="pain-body">Agendaram 10 visitas, vieram 2. O café esfriou. O Diretor perdeu o final de semana. E o boleto do tráfego chegou.</div>
+        </div>
+        <div class="pain-card">
+          <span class="pain-icon" style="font-size:22px;color:var(--gold);">◈</span>
+          <div class="pain-title">Cegueira de ROI</div>
+          <div class="pain-body">Você sabe quanto gastou no Meta. Mas não sabe qual campanha gerou a venda assinada. O dinheiro some no ralo.</div>
+        </div>
       </div>
-      <div class="section-label">Atividade do SDR</div>
-      <div class="grid2">
-        <div class="field"><label>Ligações realizadas</label><input type="number" id="f-ligas" min="0" placeholder="0"></div>
-        <div class="field"><label>Reuniões agendadas</label><input type="number" id="f-agend" min="0" placeholder="0"></div>
-        <div class="field"><label>Reuniões comparecidas</label><input type="number" id="f-comp" min="0" placeholder="0"></div>
-        <div class="field"><label>Pitchs realizados</label><input type="number" id="f-pitch" min="0" placeholder="0"></div>
+      <div class="animate-up">
+        <div class="quote-block">
+          <div class="quote-text">"Se eu não vender 30% desse estoque até dezembro, meu fluxo de caixa da obra vai estourar."</div>
+          <div class="quote-attr">A realidade de todo Diretor Comercial</div>
+        </div>
       </div>
-      <div class="section-label">Resultado comercial</div>
-      <div class="grid2">
-        <div class="field"><label>Fechamentos</label><input type="number" id="f-fecha" min="0" placeholder="0"></div>
-        <div class="field"><label>Perdidos (pós-pitch)</label><input type="number" id="f-perd" min="0" placeholder="0"></div>
-      </div>
-      <button class="btn-primary" id="save-btn" onclick="saveEntry()">Salvar registro</button>
     </div>
   </div>
-  <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page">
-    <div class="page-title">Dashboard</div>
-    <div class="period-tabs">
-      <button class="ptab active" onclick="setPeriod('semana',this)">Semana</button>
-      <button class="ptab" onclick="setPeriod('quinzena',this)">Quinzena</button>
-      <button class="ptab" onclick="setPeriod('mes',this)">Mês</button>
-      <button class="ptab" onclick="setPeriod('tudo',this)">Tudo</button>
+  <!-- ══ SLIDE 2 — NOSSA SOLUÇÃO ══ -->
+  <div class="slide bg-accent" id="s2">
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);"></div>
+    <div class="center flex-col gap-xl" style="max-width:900px;">
+      <div class="flex-col gap-md animate-up center">
+        <div class="eyebrow">A solução</div>
+        <div class="headline" style="text-align:center;">Do clique à visita confirmada<br><em>em 3 etapas.</em></div>
+        <div class="divider"></div>
+        <div class="body-text" style="text-align:center;">Cuidamos de todo o processo — da captação ao agendamento — para que o corretor receba <strong>apenas quem está pronto para comprar.</strong></div>
+      </div>
+      <div class="steps animate-up">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <div class="step-title">Captação</div>
+          <div class="step-body">Criamos os argumentos de venda do seu produto em narrativas: sair do aluguel, conquistar o próprio imóvel, segunda moradia. Cada criativo fala com quem já estava sonhando com aquilo.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <div class="step-title">Qualificação</div>
+          <div class="step-body">Identificamos timing de compra, interesse real e capacidade financeira mínima. Seu time comercial só conversa com quem já passou pelo filtro e tem condições de fechar.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <div class="step-title">Agendamento</div>
+          <div class="step-body">A ISA atende em até 1 minuto, 24h por dia, 7 dias por semana. Agenda a visita, confirma presença e entrega o cliente sentado na cadeira — pronto para o corretor.</div>
+        </div>
+      </div>
     </div>
-    <div id="dash-content"></div>
   </div>
-  <!-- HISTÓRICO -->
-  <div id="page-historico" class="page">
-    <div class="page-title">Histórico de registros</div>
-    <div class="card">
-      <div class="tbl-wrap" id="hist-content"></div>
+  <!-- ══ SLIDE 3 — ISA ══ -->
+  <div class="slide bg-dark" id="s3">
+    <div class="two-col-wide left-aligned">
+      <div class="flex-col gap-lg animate-up">
+        <div class="flex-col gap-md">
+          <div class="eyebrow">Inteligência Artificial</div>
+          <div class="headline">Conheça a <em>ISA</em></div>
+          <div class="subhead" style="color:var(--text-muted);font-size:clamp(14px,1.8vw,22px);">Internal Sales Agent</div>
+          <div class="divider"></div>
+        </div>
+        <div class="body-text">
+          A ISA é uma vendedora digital especializada no seu produto. Ela atende todo lead que chega — <strong>noite, domingo, feriado</strong> — com uma conversa natural onde o cliente sequer percebe que está falando com uma IA.
+        </div>
+        <ul class="feature-list">
+          <li><strong>Resposta em até 1 minuto</strong> — o interesse ainda está quente</li>
+          <li><strong>Atende no WhatsApp</strong> — canal preferido do comprador brasileiro</li>
+          <li><strong>Pré-qualifica e filtra</strong> — só passa quem tem real potencial</li>
+          <li><strong>Agenda a visita</strong> diretamente na agenda do corretor</li>
+          <li><strong>Nunca perde um lead</strong> por horário ou volume</li>
+          <li><strong>Envia o book do produto</strong> automaticamente no momento certo</li>
+        </ul>
+      </div>
+      <div class="animate-up" style="display:flex;flex-direction:column;gap:2px;">
+        <div style="background:var(--dark-3);border:0.5px solid rgba(201,168,76,0.12);padding:1.5rem;border-radius:2px;">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Conversa real — ISA em ação</div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div style="background:var(--dark-4);padding:10px 14px;border-radius:0 12px 12px 12px;max-width:85%;font-size:clamp(11px,1.2vw,13px);color:var(--text-muted);line-height:1.5;">
+              Olá! Vi o anúncio do empreendimento. Quanto custa?
+            </div>
+            <div style="background:rgba(201,168,76,0.08);border:0.5px solid rgba(201,168,76,0.15);padding:10px 14px;border-radius:12px 0 12px 12px;max-width:85%;margin-left:auto;font-size:clamp(11px,1.2vw,13px);color:var(--text);line-height:1.5;">
+              Oi! Fico feliz com seu interesse 😊 Temos unidades a partir de R$300mil, com entrada parcelada. Me conta — seria para moradia ou investimento?
+            </div>
+            <div style="background:var(--dark-4);padding:10px 14px;border-radius:0 12px 12px 12px;max-width:85%;font-size:clamp(11px,1.2vw,13px);color:var(--text-muted);line-height:1.5;">
+              Moradia. Minha família é de lá.
+            </div>
+            <div style="background:rgba(201,168,76,0.08);border:0.5px solid rgba(201,168,76,0.15);padding:10px 14px;border-radius:12px 0 12px 12px;max-width:85%;margin-left:auto;font-size:clamp(11px,1.2vw,13px);color:var(--text);line-height:1.5;">
+              Que bonito, voltar para casa 🌟 Posso agendar uma visita para você conhecer pessoalmente? Temos horário esta semana ainda.
+            </div>
+            <div style="text-align:center;padding:8px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);border-top:0.5px solid rgba(201,168,76,0.1);margin-top:4px;">Visita agendada ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ SLIDE 4 — CRM MOON ══ -->
+  <div class="slide bg-dark" id="s4">
+    <div class="left-aligned flex-col gap-xl">
+      <div class="flex-col gap-md animate-up">
+        <div class="eyebrow">Central de Comando</div>
+        <div class="headline">CRM <em>Moon</em></div>
+        <div class="divider"></div>
+        <div class="body-text">Tudo centralizado. Quem não mede, não cresce — e você vai saber <strong>exatamente qual parafuso apertar</strong> a cada semana.</div>
+      </div>
+      <div class="crm-grid animate-up">
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">Dashboard em tempo real</div>
+            <div class="crm-desc">Leads, ligações, visitas agendadas, comparecidas e vendas. VGV gerado. Tudo numa tela só para você mostrar aos sócios.</div>
+          </div>
+        </div>
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">ROI transparente</div>
+            <div class="crm-desc">Você vê quanto investiu, quantos leads gerou e quanto cada venda custou. Fim da cegueira de ROI.</div>
+          </div>
+        </div>
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">WhatsApp + Ligação + E-mail</div>
+            <div class="crm-desc">O corretor opera tudo pelo CRM. Nenhum cliente fica salvo no celular pessoal. Todas as ligações gravadas para análise.</div>
+          </div>
+        </div>
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">Kanban de oportunidades</div>
+            <div class="crm-desc">Cada lead no estágio certo do funil. Distribuição automática. Funil detalhado que mostra onde estão os gargalos.</div>
+          </div>
+        </div>
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">App no celular</div>
+            <div class="crm-desc">Acompanhamento contínuo de onde você estiver. Você sempre sabe o que está acontecendo no seu stand.</div>
+          </div>
+        </div>
+        <div class="crm-item">
+          <div class="crm-dot"></div>
+          <div class="crm-text">
+            <div class="crm-title">Automações de follow-up</div>
+            <div class="crm-desc">E-mail, WhatsApp e SMS disparados no momento certo, de forma automática. Zero lead esquecido.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ SLIDE 5 — CASES ══ -->
+  <div class="slide bg-case" id="s5">
+    <div class="left-aligned flex-col gap-xl">
+      <div class="flex-col gap-md animate-up">
+        <div class="eyebrow">Resultados comprovados</div>
+        <div class="headline">Quem <em>confiou</em> no método</div>
+        <div class="divider"></div>
+      </div>
+      <div class="case-grid animate-up">
+        <div class="case-card">
+          <div class="case-tag">Case 01 — Loteadora</div>
+          <div class="case-name">Momentum<br>Incorporadora</div>
+          <div class="case-stats">
+            <div class="case-stat">
+              <span class="case-stat-label">VGV mensal gerado</span>
+              <span class="case-stat-value">R$4MM</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Visitas por mês</span>
+              <span class="case-stat-value">60</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Vendas por mês</span>
+              <span class="case-stat-value">24 unidades</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Investimento mensal</span>
+              <span class="case-stat-value">R$120k/mês</span>
+            </div>
+          </div>
+          <div class="case-highlight">"Em 45 dias superamos o resultado de todo o time de marketing interno — sem desligar ninguém."</div>
+        </div>
+        <div class="case-card">
+          <div class="case-tag">Case 02 — Incorporadora</div>
+          <div class="case-name">Majestic<br>Elevate</div>
+          <div class="case-stats">
+            <div class="case-stat">
+              <span class="case-stat-label">Reservado antes do lançamento</span>
+              <span class="case-stat-value">60%</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Ticket por unidade</span>
+              <span class="case-stat-value">R$1,2M</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Situação atual</span>
+              <span class="case-stat-value">Últimas 10 un.</span>
+            </div>
+            <div class="case-stat">
+              <span class="case-stat-label">Meta do cliente</span>
+              <span class="case-stat-value">30 prédios / 10 anos</span>
+            </div>
+          </div>
+          <div class="case-highlight">"60% reservado antes mesmo do estande de vendas ficar pronto. Orçamento de obra garantido."</div>
+        </div>
+      </div>
+      <div class="animate-up">
+        <div class="stat-row">
+          <div class="stat-block">
+            <div class="stat-number">R$500MM</div>
+            <div class="stat-label">VGV gerado em 2025</div>
+          </div>
+          <div style="width:0.5px;background:rgba(201,168,76,0.15);align-self:stretch;"></div>
+          <div class="stat-block">
+            <div class="stat-number">R$1B</div>
+            <div class="stat-label">Meta 2026</div>
+          </div>
+          <div style="width:0.5px;background:rgba(201,168,76,0.15);align-self:stretch;"></div>
+          <div class="stat-block">
+            <div class="stat-number">Brasil</div>
+            <div class="stat-label">Atuação nacional</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ SLIDE 6 — INVESTIMENTO ══ -->
+  <div class="slide bg-accent" id="s6">
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);"></div>
+    <div class="two-col left-aligned">
+      <div class="flex-col gap-lg animate-up">
+        <div class="flex-col gap-md">
+          <div class="eyebrow">Parceria</div>
+          <div class="headline">Investimento<br><em>personalizado</em></div>
+          <div class="divider"></div>
+        </div>
+        <div class="body-text">
+          Nossa abordagem comercial é 100% customizada para cada parceiro. Cada empreendimento tem suas particularidades — e nosso modelo reflete isso.
+        </div>
+        <ul class="feature-list">
+          <li><strong>Gestão de tráfego pago</strong> — Meta, Google e portais</li>
+          <li><strong>Criação de criativos</strong> — vídeos, artes e narrativas de venda</li>
+          <li><strong>ISA</strong> — agente de IA especializada no seu produto</li>
+          <li><strong>CRM Moon</strong> — central de comando completa</li>
+          <li><strong>SDR humano</strong> — para projetos que exigem escala</li>
+          <li><strong>Gestor de conta dedicado</strong> — sempre alguém no leme</li>
+        </ul>
+      </div>
+      <div class="animate-up" style="display:flex;justify-content:center;">
+        <div class="invest-box">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;">Modelo de entrada</div>
+          <div class="invest-price">Sob<br>consulta</div>
+          <div class="invest-period" style="margin-top:0.5rem;">Proposta personalizada por projeto</div>
+          <div class="divider-full"></div>
+          <ul class="invest-items">
+            <li>Diagnóstico completo do empreendimento</li>
+            <li>Plano de ação detalhado 90 dias</li>
+            <li>Estrutura de funções e responsáveis</li>
+            <li>Projeção de visitas e VSO estimado</li>
+            <li>Treinamento do time comercial incluso</li>
+          </ul>
+          <button class="cta-btn" onclick="alert('Fale com a Digital Moon para receber sua proposta personalizada.')">Quero minha proposta →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ SLIDE 7 — PRÓXIMO PASSO ══ -->
+  <div class="slide bg-cover" id="s7">
+    <div style="position:absolute;width:500px;height:500px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.07);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div style="position:absolute;width:300px;height:300px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.1);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div class="center flex-col gap-xl" style="max-width:680px;">
+      <div class="flex-col gap-md center animate-up">
+        <div class="eyebrow">Próximo passo</div>
+        <div class="display" style="text-align:center;">O stand <em>cheio</em><br>começa aqui.</div>
+        <div class="divider"></div>
+      </div>
+      <div class="animate-up">
+        <div class="body-text" style="text-align:center;">
+          Em uma reunião de diagnóstico, identificamos os pontos críticos do seu empreendimento e montamos um plano com <strong>projeção real de visitas, custo por lead e VSO estimado.</strong>
+        </div>
+      </div>
+      <div class="animate-up" style="display:flex;flex-direction:column;gap:1rem;align-items:center;width:100%;">
+        <div style="display:flex;gap:3rem;justify-content:center;flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">WhatsApp</div>
+            <div style="font-family:var(--serif);font-size:clamp(14px,1.8vw,20px);color:var(--gold-light);">Solicitar via mensagem</div>
+          </div>
+          <div style="width:0.5px;background:rgba(201,168,76,0.15);"></div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Site</div>
+            <div style="font-family:var(--serif);font-size:clamp(14px,1.8vw,20px);color:var(--gold-light);">digitalmoon.com.br</div>
+          </div>
+        </div>
+        <div class="divider-full" style="max-width:400px;"></div>
+        <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);">
+          Digital Moon · Sistemas de Visitas Garantidas™
+        </div>
+      </div>
     </div>
   </div>
 </div>
+<!-- ══ NAV ══ -->
+<div class="nav" id="nav">
+  <button class="nav-btn" id="btn-prev" onclick="prevSlide()">←</button>
+  <div id="dots"></div>
+  <span class="nav-counter" id="counter">1 / 8</span>
+  <button class="nav-btn" id="btn-next" onclick="nextSlide()">→</button>
+</div>
 <script>
-// ── Supabase client ──────────────────────────────────────────────────────────
-const { createClient } = supabase;
-const sb = createClient(
-  'https://pzwnvuypmwsgnoihkxzq.supabase.co',
-  'sb_publishable_ANMsNc9CpyLAfaQAxh_v0Q_7ZX__vc0'
-);
-
-// ── State ────────────────────────────────────────────────────────────────────
-let currentPeriod = 'semana';
-let chartInstance = null;
-
-// ── Data layer (Supabase) ────────────────────────────────────────────────────
-async function loadEntries() {
-  const { data, error } = await sb.from('entries').select('*').order('date', { ascending: true });
-  if (error) { console.error('loadEntries:', error); return []; }
-  return data;
-}
-
-async function upsertEntry(entry) {
-  const { error } = await sb.from('entries').upsert(entry, { onConflict: 'date' });
-  return error;
-}
-
-async function removeEntry(date) {
-  const { error } = await sb.from('entries').delete().eq('date', date);
-  return error;
-}
-
-// ── UI helpers ───────────────────────────────────────────────────────────────
-function switchTab(name, el) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (name === 'dashboard') renderDash();
-  if (name === 'historico') renderHist();
-}
-
-function showAlert(msg, type) {
-  const el = document.getElementById('alert-box');
-  el.textContent = msg;
-  el.className = 'alert show alert-' + type;
-  setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-// ── Actions ──────────────────────────────────────────────────────────────────
-async function saveEntry() {
-  const date = document.getElementById('entry-date').value;
-  if (!date) { showAlert('Selecione uma data.', 'error'); return; }
-
-  const entry = {
-    date,
-    invest: parseFloat(document.getElementById('f-invest').value) || 0,
-    leads:  parseFloat(document.getElementById('f-leads').value)  || 0,
-    ligas:  parseFloat(document.getElementById('f-ligas').value)  || 0,
-    agend:  parseFloat(document.getElementById('f-agend').value)  || 0,
-    comp:   parseFloat(document.getElementById('f-comp').value)   || 0,
-    pitch:  parseFloat(document.getElementById('f-pitch').value)  || 0,
-    fecha:  parseFloat(document.getElementById('f-fecha').value)  || 0,
-    perd:   parseFloat(document.getElementById('f-perd').value)   || 0,
-  };
-
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Salvando…';
-
-  const error = await upsertEntry(entry);
-
-  btn.disabled = false;
-  btn.textContent = 'Salvar registro';
-
-  if (error) {
-    showAlert('Erro ao salvar: ' + error.message, 'error');
-    return;
-  }
-
-  showAlert('Registro salvo com sucesso!', 'success');
-  ['f-invest','f-leads','f-ligas','f-agend','f-comp','f-pitch','f-fecha','f-perd']
-    .forEach(id => document.getElementById(id).value = '');
-}
-
-async function deleteEntry(date) {
-  if (!confirm('Excluir o registro de ' + date + '?')) return;
-  const error = await removeEntry(date);
-  if (error) { alert('Erro ao excluir: ' + error.message); return; }
-  renderHist();
-}
-
-// ── Calculations ─────────────────────────────────────────────────────────────
-function filterByPeriod(entries, period) {
-  if (period === 'tudo') return entries;
-  const days = period === 'semana' ? 7 : period === 'quinzena' ? 15 : 30;
-  const cutoff = new Date(Date.now() - days * 86400000);
-  return entries.filter(e => new Date(e.date) >= cutoff);
-}
-
-const sum = (arr, k) => arr.reduce((a, e) => a + (e[k] || 0), 0);
-const pct = (a, b) => b ? Math.round((a / b) * 100) : null;
-const fmt = n => n === null ? '—' : n + '%';
-const brl = n => 'R$' + Math.round(n).toLocaleString('pt-BR');
-
-function convColor(n, lo, hi) {
-  if (n === null) return '';
-  if (n >= hi) return 'conv-good';
-  if (n >= lo) return 'conv-warn';
-  return 'conv-bad';
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function setPeriod(p, el) {
-  currentPeriod = p;
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderDash();
-}
-
-async function renderDash() {
-  const el = document.getElementById('dash-content');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const all = await loadEntries();
-  const entries = filterByPeriod(all, currentPeriod);
-
-  if (!entries.length) {
-    el.innerHTML = '<div class="card"><div class="empty">Nenhum registro no período selecionado.<br>Adicione dados na aba "Registro diário".</div></div>';
-    return;
-  }
-
-  const invest = sum(entries,'invest'), leads = sum(entries,'leads'), ligas = sum(entries,'ligas');
-  const agend  = sum(entries,'agend'),  comp  = sum(entries,'comp'),  pitch = sum(entries,'pitch');
-  const fecha  = sum(entries,'fecha');
-  const cpl    = leads ? invest / leads : 0;
-  const cpa    = fecha ? invest / fecha : 0;
-  const ltv    = 5250 * 3;
-  const roi    = cpa ? Math.round(((ltv - cpa) / cpa) * 100) : null;
-  const roiColor = roi === null ? 'inherit' : roi > 100 ? 'var(--green)' : roi > 0 ? 'var(--amber)' : 'var(--red)';
-
-  const convs = [
-    { lbl:'Lead → ligação',      v:pct(ligas,leads), lo:60, hi:80 },
-    { lbl:'Ligação → agend.',    v:pct(agend,ligas), lo:20, hi:35 },
-    { lbl:'Agend. → comparec.',  v:pct(comp,agend),  lo:50, hi:70 },
-    { lbl:'Comparec. → pitch',   v:pct(pitch,comp),  lo:70, hi:90 },
-    { lbl:'Pitch → fechamento',  v:pct(fecha,pitch), lo:15, hi:30 },
-    { lbl:'Lead → cliente',      v:pct(fecha,leads), lo:1,  hi:3  },
-  ];
-
-  el.innerHTML = `
-    <div class="card">
-      <div class="section-label">Visão geral do período</div>
-      <div class="grid4" style="margin-bottom:1rem;">
-        <div class="mcard"><div class="lbl">Investimento</div><div class="val">${brl(invest)}</div></div>
-        <div class="mcard"><div class="lbl">Leads gerados</div><div class="val">${Math.round(leads)}</div></div>
-        <div class="mcard"><div class="lbl">Fechamentos</div><div class="val">${Math.round(fecha)}</div></div>
-        <div class="mcard"><div class="lbl">ROI tráfego</div><div class="val" style="color:${roiColor}">${roi === null ? '—' : roi + '%'}</div></div>
-      </div>
-      <div class="grid3">
-        <div class="mcard"><div class="lbl">Custo por lead</div><div class="val">${cpl ? brl(cpl) : '—'}</div></div>
-        <div class="mcard"><div class="lbl">CAC</div><div class="val">${cpa ? brl(cpa) : '—'}</div><div class="sub">custo por cliente</div></div>
-        <div class="mcard"><div class="lbl">LTV estimado (3m)</div><div class="val">${brl(ltv)}</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-label">Conversões por etapa</div>
-      <div class="grid3">
-        ${convs.map(c => `
-          <div class="mcard">
-            <div class="lbl">${c.lbl}</div>
-            <div class="val ${convColor(c.v, c.lo, c.hi)}">${fmt(c.v)}</div>
-          </div>`).join('')}
-      </div>
-      <p style="font-size:11px;color:var(--text-tertiary);margin-top:.75rem;">
-        Verde = acima do benchmark &nbsp;|&nbsp; Amarelo = atenção &nbsp;|&nbsp; Vermelho = abaixo do esperado
-      </p>
-    </div>
-    <div class="card">
-      <div class="section-label">Evolução diária</div>
-      <div class="chart-wrap"><canvas id="chart-evo"></canvas></div>
-      <div class="legend">
-        <span><span class="legend-dot" style="background:#85B7EB;"></span>Leads</span>
-        <span><span class="legend-dot" style="background:#1D9E75;"></span>Fechamentos</span>
-      </div>
-    </div>
-  `;
-
-  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-  chartInstance = new Chart(document.getElementById('chart-evo'), {
-    type: 'bar',
-    data: {
-      labels: entries.map(e => e.date.slice(5)),
-      datasets: [
-        { label:'Leads',       data: entries.map(e => e.leads), backgroundColor:'#85B7EB', borderRadius:3 },
-        { label:'Fechamentos', data: entries.map(e => e.fecha), backgroundColor:'#1D9E75', borderRadius:3 },
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display:false } },
-      scales: {
-        x: { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
-        y: { ticks:{ font:{size:11} }, grid:{ color:'rgba(128,128,128,0.1)' } }
-      }
-    }
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+const counter = document.getElementById('counter');
+let cur = 0;
+function buildDots(){
+  dotsEl.innerHTML = '';
+  dotsEl.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  slides.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i===cur?' active':'');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
   });
 }
-
-async function renderHist() {
-  const el = document.getElementById('hist-content');
-  el.innerHTML = '<div class="loading">Carregando…</div>';
-
-  const entries = await loadEntries();
-  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
-
-  if (!sorted.length) {
-    el.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece pelo "Registro diário".</div>';
-    return;
-  }
-
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Data</th><th>Invest.</th><th>Leads</th><th>Ligas</th>
-          <th>Agend.</th><th>Comp.</th><th>Pitch</th>
-          <th style="color:var(--green);">Fecha.</th>
-          <th style="color:var(--red);">Perd.</th>
-          <th>CAC</th><th></th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sorted.map(e => {
-          const cac = e.fecha ? brl(e.invest / e.fecha) : '—';
-          return `<tr>
-            <td>${e.date}</td>
-            <td>${brl(e.invest)}</td>
-            <td>${e.leads}</td><td>${e.ligas}</td><td>${e.agend}</td>
-            <td>${e.comp}</td><td>${e.pitch}</td>
-            <td style="color:var(--green);font-weight:500;">${e.fecha}</td>
-            <td style="color:var(--red);">${e.perd}</td>
-            <td>${cac}</td>
-            <td><button class="del-btn" onclick="deleteEntry('${e.date}')">excluir</button></td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
+function goTo(n){
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, slides.length-1));
+  slides[cur].classList.add('active');
+  buildDots();
+  counter.textContent = (cur+1) + ' / ' + slides.length;
 }
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById('entry-date').value = new Date().toISOString().slice(0, 10);
+function nextSlide(){ goTo(cur+1); }
+function prevSlide(){ goTo(cur-1); }
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') { e.preventDefault(); nextSlide(); }
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') { e.preventDefault(); prevSlide(); }
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if(Math.abs(dx) > 50) dx < 0 ? nextSlide() : prevSlide();
+});
+buildDots();
 </script>
 </body>
 </html>

@@ -29,13 +29,14 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
-        run: python scripts/fetch_sheets.py
+          SHEET_RANGE: ${{ secrets.SHEET_RANGE }}
+        run: python campaign-dashboard/scripts/fetch_sheets.py
 
       - name: Commit updated data
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add data.json
+          git add campaign-dashboard/data.json
           git diff --staged --quiet && echo "No changes to commit" || \
             git commit -m "chore: update campaign data $(date -u '+%Y-%m-%d')"
           git push

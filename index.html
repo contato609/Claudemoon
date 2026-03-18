@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tracker Funil Comercial — Digital Moon</title>
+<title>Digital Moon — Funil Comercial</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -31,6 +31,7 @@
     --red-text: #791F1F;
     --blue-bg: #E6F1FB;
     --blue-text: #0C447C;
+    --meta-blue: #1877F2;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -99,8 +100,13 @@
     color: var(--blue-text);
     font-weight: 500;
   }
+  .nav-btn.meta-active {
+    background: #E7F0FE;
+    color: var(--meta-blue);
+    font-weight: 500;
+  }
   .container {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
   }
@@ -134,16 +140,19 @@
     padding-bottom: 6px;
     border-bottom: 0.5px solid var(--border);
   }
+  .section-label:first-child { margin-top: 0; }
   .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
   .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
   .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
-  @media(max-width: 600px) {
+  @media(max-width: 640px) {
     .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .grid3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .app-nav { gap: 2px; }
+    .nav-btn { padding: 6px 10px; font-size: 12px; }
   }
   .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
   .field label { font-size: 12px; color: var(--text-secondary); }
-  input[type="number"], input[type="date"] {
+  input[type="number"], input[type="date"], input[type="text"], input[type="password"] {
     width: 100%;
     padding: 8px 10px;
     font-size: 14px;
@@ -155,7 +164,7 @@
     transition: border-color 0.15s;
     font-family: inherit;
   }
-  input[type="number"]:focus, input[type="date"]:focus {
+  input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
   }
@@ -176,6 +185,47 @@
   .btn-primary:hover { opacity: 0.88; }
   .btn-primary:active { opacity: 0.76; transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg-tertiary); }
+  .btn-meta {
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--meta-blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .btn-meta:hover { opacity: 0.88; }
+  .btn-sync {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .btn-sync:hover { opacity: 0.88; }
   .mcard {
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
@@ -306,6 +356,9 @@
     font-weight: 500;
     margin-bottom: 1.5rem;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   .loading {
     text-align: center;
@@ -313,22 +366,78 @@
     color: var(--text-tertiary);
     font-size: 13px;
   }
+  /* Meta Ads specific */
+  .meta-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .badge-active { background: var(--green-bg); color: var(--green-text); }
+  .badge-paused { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-other  { background: var(--bg-secondary); color: var(--text-tertiary); }
+  .connected-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .dot-live {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .config-panel {
+    border-top: 0.5px solid var(--border);
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+  .help-text {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .roas-good { color: var(--green); font-weight: 600; }
+  .roas-warn { color: var(--amber); font-weight: 600; }
+  .roas-bad  { color: var(--red);   font-weight: 600; }
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--green-bg);
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .sync-bar p {
+    font-size: 13px;
+    color: var(--green-text);
+    flex: 1;
+  }
 </style>
 </head>
 <body>
 <header class="app-header">
   <div class="logo">
     <div class="logo-dot"></div>
-    Digital Moon — Funil Comercial
+    Digital Moon
   </div>
   <nav class="app-nav">
-    <button class="nav-btn active" onclick="switchTab('input',this)">Registro diário</button>
-    <button class="nav-btn" onclick="switchTab('dashboard',this)">Dashboard</button>
-    <button class="nav-btn" onclick="switchTab('historico',this)">Histórico</button>
+    <button class="nav-btn active" data-tab="input"    onclick="switchTab('input',this)">Registro diário</button>
+    <button class="nav-btn"        data-tab="dashboard" onclick="switchTab('dashboard',this)">Dashboard</button>
+    <button class="nav-btn"        data-tab="historico" onclick="switchTab('historico',this)">Histórico</button>
+    <button class="nav-btn"        data-tab="metaads"   onclick="switchTab('metaads',this)">Meta Ads</button>
   </nav>
 </header>
+
 <div class="container">
-  <!-- REGISTRO DIÁRIO -->
+
+  <!-- ── REGISTRO DIÁRIO ───────────────────────────────────────────────── -->
   <div id="page-input" class="page active">
     <div class="page-title">Registro diário</div>
     <div class="card">
@@ -337,6 +446,7 @@
         <input type="date" id="entry-date" style="width:auto;font-size:13px;padding:6px 10px;">
       </div>
       <div id="alert-box" class="alert"></div>
+      <div id="meta-sync-notice" style="display:none;" class="alert alert-success show" style="margin-bottom:1rem;"></div>
       <div class="section-label">Investimento e captação</div>
       <div class="grid2">
         <div class="field"><label>Investimento em tráfego (R$)</label><input type="number" id="f-invest" min="0" placeholder="0"></div>
@@ -357,7 +467,8 @@
       <button class="btn-primary" id="save-btn" onclick="saveEntry()">Salvar registro</button>
     </div>
   </div>
-  <!-- DASHBOARD -->
+
+  <!-- ── DASHBOARD ─────────────────────────────────────────────────────── -->
   <div id="page-dashboard" class="page">
     <div class="page-title">Dashboard</div>
     <div class="period-tabs">
@@ -368,61 +479,137 @@
     </div>
     <div id="dash-content"></div>
   </div>
-  <!-- HISTÓRICO -->
+
+  <!-- ── HISTÓRICO ─────────────────────────────────────────────────────── -->
   <div id="page-historico" class="page">
     <div class="page-title">Histórico de registros</div>
     <div class="card">
       <div class="tbl-wrap" id="hist-content"></div>
     </div>
   </div>
-</div>
+
+  <!-- ── META ADS ──────────────────────────────────────────────────────── -->
+  <div id="page-metaads" class="page">
+    <div class="page-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Meta Ads
+    </div>
+
+    <!-- Config card -->
+    <div class="card" id="meta-config-card">
+      <div class="card-header" style="margin-bottom:0;">
+        <span class="card-title">Conexão</span>
+        <button class="btn-secondary" onclick="toggleMetaConfig()" id="meta-config-toggle">Configurar</button>
+      </div>
+      <div id="meta-status-row" style="margin-top:10px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">Nenhuma conta conectada. Clique em "Configurar" para começar.</span>
+      </div>
+      <div id="meta-config-panel" class="config-panel" style="display:none;">
+        <div class="grid2" style="margin-bottom:0;">
+          <div class="field">
+            <label>Access Token (System User)</label>
+            <input type="password" id="meta-token-input" placeholder="EAAxxxxxx…" autocomplete="off">
+            <span class="help-text">Gerado no Meta Business Manager → Usuários do sistema → Gerar token</span>
+          </div>
+          <div class="field">
+            <label>Ad Account ID</label>
+            <input type="text" id="meta-account-input" placeholder="1234567890 ou act_1234567890" autocomplete="off">
+            <span class="help-text">Business Manager → Configurações → Contas de anúncio</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:1rem;">
+          <button class="btn-meta" style="margin-top:0;" onclick="saveMetaConfig()">Conectar</button>
+          <button class="btn-secondary" onclick="disconnectMeta()" style="white-space:nowrap;">Remover credenciais</button>
+        </div>
+        <p class="help-text" style="margin-top:10px;">
+          Suas credenciais ficam salvas apenas no <strong>localStorage do seu navegador</strong> — nenhum servidor as recebe.
+        </p>
+      </div>
+    </div>
+
+    <!-- Period tabs -->
+    <div class="period-tabs" id="meta-period-tabs">
+      <button class="ptab active" onclick="setMetaPeriod('last_7d',this)">7 dias</button>
+      <button class="ptab" onclick="setMetaPeriod('last_14d',this)">14 dias</button>
+      <button class="ptab" onclick="setMetaPeriod('last_30d',this)">30 dias</button>
+      <button class="ptab" onclick="setMetaPeriod('this_month',this)">Este mês</button>
+    </div>
+
+    <!-- Dynamic content -->
+    <div id="meta-content"></div>
+  </div>
+
+</div><!-- /container -->
+
 <script>
-// ── Supabase client ──────────────────────────────────────────────────────────
+// ── Supabase ──────────────────────────────────────────────────────────────────
 const { createClient } = supabase;
 const sb = createClient(
   'https://pzwnvuypmwsgnoihkxzq.supabase.co',
   'sb_publishable_ANMsNc9CpyLAfaQAxh_v0Q_7ZX__vc0'
 );
 
-// ── State ────────────────────────────────────────────────────────────────────
-let currentPeriod = 'semana';
-let chartInstance = null;
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentPeriod  = 'semana';
+let metaPeriod     = 'last_7d';
+let chartInstance  = null;
+let metaChart      = null;
 
-// ── Data layer (Supabase) ────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const sum     = (arr, k) => arr.reduce((a, e) => a + (e[k] || 0), 0);
+const pct     = (a, b)   => b ? Math.round((a / b) * 100) : null;
+const fmt     = n        => n === null ? '—' : n + '%';
+const brl     = n        => 'R$\u00a0' + Math.round(n).toLocaleString('pt-BR');
+const brl2    = n        => 'R$\u00a0' + Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num     = n        => Number(n).toLocaleString('pt-BR');
+
+function convColor(n, lo, hi) {
+  if (n === null) return '';
+  if (n >= hi) return 'conv-good';
+  if (n >= lo) return 'conv-warn';
+  return 'conv-bad';
+}
+
+// ── Supabase data layer ───────────────────────────────────────────────────────
 async function loadEntries() {
   const { data, error } = await sb.from('entries').select('*').order('date', { ascending: true });
   if (error) { console.error('loadEntries:', error); return []; }
   return data;
 }
-
 async function upsertEntry(entry) {
   const { error } = await sb.from('entries').upsert(entry, { onConflict: 'date' });
   return error;
 }
-
 async function removeEntry(date) {
   const { error } = await sb.from('entries').delete().eq('date', date);
   return error;
 }
 
-// ── UI helpers ───────────────────────────────────────────────────────────────
+// ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(name, el) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.remove('active', 'meta-active');
+  });
+  if (name === 'metaads') el.classList.add('meta-active');
+  else el.classList.add('active');
+
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
+
   if (name === 'dashboard') renderDash();
   if (name === 'historico') renderHist();
+  if (name === 'metaads')   initMetaPage();
 }
 
+// ── Alert ─────────────────────────────────────────────────────────────────────
 function showAlert(msg, type) {
   const el = document.getElementById('alert-box');
   el.textContent = msg;
   el.className = 'alert show alert-' + type;
-  setTimeout(() => el.classList.remove('show'), 3000);
+  setTimeout(() => el.classList.remove('show'), 3500);
 }
 
-// ── Actions ──────────────────────────────────────────────────────────────────
+// ── Registro diário ───────────────────────────────────────────────────────────
 async function saveEntry() {
   const date = document.getElementById('entry-date').value;
   if (!date) { showAlert('Selecione uma data.', 'error'); return; }
@@ -440,19 +627,12 @@ async function saveEntry() {
   };
 
   const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Salvando…';
+  btn.disabled = true; btn.textContent = 'Salvando…';
 
   const error = await upsertEntry(entry);
+  btn.disabled = false; btn.textContent = 'Salvar registro';
 
-  btn.disabled = false;
-  btn.textContent = 'Salvar registro';
-
-  if (error) {
-    showAlert('Erro ao salvar: ' + error.message, 'error');
-    return;
-  }
-
+  if (error) { showAlert('Erro ao salvar: ' + error.message, 'error'); return; }
   showAlert('Registro salvo com sucesso!', 'success');
   ['f-invest','f-leads','f-ligas','f-agend','f-comp','f-pitch','f-fecha','f-perd']
     .forEach(id => document.getElementById(id).value = '');
@@ -465,7 +645,7 @@ async function deleteEntry(date) {
   renderHist();
 }
 
-// ── Calculations ─────────────────────────────────────────────────────────────
+// ── Funil dashboard ───────────────────────────────────────────────────────────
 function filterByPeriod(entries, period) {
   if (period === 'tudo') return entries;
   const days = period === 'semana' ? 7 : period === 'quinzena' ? 15 : 30;
@@ -473,22 +653,9 @@ function filterByPeriod(entries, period) {
   return entries.filter(e => new Date(e.date) >= cutoff);
 }
 
-const sum = (arr, k) => arr.reduce((a, e) => a + (e[k] || 0), 0);
-const pct = (a, b) => b ? Math.round((a / b) * 100) : null;
-const fmt = n => n === null ? '—' : n + '%';
-const brl = n => 'R$' + Math.round(n).toLocaleString('pt-BR');
-
-function convColor(n, lo, hi) {
-  if (n === null) return '';
-  if (n >= hi) return 'conv-good';
-  if (n >= lo) return 'conv-warn';
-  return 'conv-bad';
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
 function setPeriod(p, el) {
   currentPeriod = p;
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-dashboard .ptab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderDash();
 }
@@ -497,7 +664,7 @@ async function renderDash() {
   const el = document.getElementById('dash-content');
   el.innerHTML = '<div class="loading">Carregando…</div>';
 
-  const all = await loadEntries();
+  const all     = await loadEntries();
   const entries = filterByPeriod(all, currentPeriod);
 
   if (!entries.length) {
@@ -572,8 +739,7 @@ async function renderDash() {
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display:false } },
       scales: {
         x: { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
@@ -588,7 +754,7 @@ async function renderHist() {
   el.innerHTML = '<div class="loading">Carregando…</div>';
 
   const entries = await loadEntries();
-  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+  const sorted  = [...entries].sort((a, b) => b.date.localeCompare(a.date));
 
   if (!sorted.length) {
     el.innerHTML = '<div class="empty">Nenhum registro ainda.<br>Comece pelo "Registro diário".</div>';
@@ -622,6 +788,319 @@ async function renderHist() {
         }).join('')}
       </tbody>
     </table>`;
+}
+
+// ── META ADS ──────────────────────────────────────────────────────────────────
+const META_API  = 'https://graph.facebook.com/v21.0';
+const LEAD_TYPES = ['lead', 'onsite_conversion.lead_grouped', 'contact_total'];
+const CONV_TYPES = ['purchase', 'omni_purchase', 'offsite_conversion.fb_pixel_purchase'];
+
+function metaConfig() {
+  const token   = localStorage.getItem('meta_token')   || '';
+  const account = localStorage.getItem('meta_account') || '';
+  return { token, account };
+}
+
+function saveMetaConfig() {
+  const token   = document.getElementById('meta-token-input').value.trim();
+  let   account = document.getElementById('meta-account-input').value.trim();
+  if (!token || !account) { alert('Preencha token e conta antes de continuar.'); return; }
+  if (!account.startsWith('act_')) account = 'act_' + account;
+  localStorage.setItem('meta_token',   token);
+  localStorage.setItem('meta_account', account);
+  document.getElementById('meta-config-panel').style.display = 'none';
+  document.getElementById('meta-config-toggle').textContent = 'Configurar';
+  updateMetaStatus();
+  loadMetaData();
+}
+
+function disconnectMeta() {
+  if (!confirm('Remover credenciais salvas?')) return;
+  localStorage.removeItem('meta_token');
+  localStorage.removeItem('meta_account');
+  updateMetaStatus();
+  document.getElementById('meta-content').innerHTML = '';
+}
+
+function toggleMetaConfig() {
+  const panel = document.getElementById('meta-config-panel');
+  const btn   = document.getElementById('meta-config-toggle');
+  const open  = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? 'Fechar' : 'Configurar';
+  if (open) {
+    const { token, account } = metaConfig();
+    if (token)   document.getElementById('meta-token-input').value   = token;
+    if (account) document.getElementById('meta-account-input').value = account;
+  }
+}
+
+function updateMetaStatus() {
+  const { token, account } = metaConfig();
+  const row = document.getElementById('meta-status-row');
+  if (token && account) {
+    row.innerHTML = `
+      <div class="connected-row">
+        <div class="dot-live"></div>
+        <span style="font-size:13px;font-weight:500;color:var(--green);">Conectado</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">${account}</span>
+        <button class="btn-secondary" onclick="disconnectMeta()" style="font-size:11px;padding:4px 10px;">Desconectar</button>
+      </div>`;
+  } else {
+    row.innerHTML = `<span style="font-size:13px;color:var(--text-tertiary);">Nenhuma conta conectada. Clique em "Configurar" para começar.</span>`;
+  }
+}
+
+function setMetaPeriod(p, el) {
+  metaPeriod = p;
+  document.querySelectorAll('#meta-period-tabs .ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadMetaData();
+}
+
+function initMetaPage() {
+  updateMetaStatus();
+  const { token, account } = metaConfig();
+  if (token && account) loadMetaData();
+}
+
+async function fetchMeta(path, params = {}) {
+  const { token } = metaConfig();
+  if (!token) throw new Error('Token não configurado.');
+  const url = new URL(META_API + path);
+  url.searchParams.set('access_token', token);
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
+  }
+  const res  = await fetch(url.toString());
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Erro da API do Meta');
+  return data;
+}
+
+function getActionVal(actions, types) {
+  if (!Array.isArray(actions)) return 0;
+  return types.reduce((s, t) => {
+    const a = actions.find(x => x.action_type === t);
+    return s + (a ? parseFloat(a.value) : 0);
+  }, 0);
+}
+
+async function loadMetaData() {
+  const { token, account } = metaConfig();
+  if (!token || !account) return;
+
+  const el = document.getElementById('meta-content');
+  el.innerHTML = '<div class="loading">Buscando dados no Meta Ads…</div>';
+
+  try {
+    const insightFields = 'spend,impressions,clicks,reach,frequency,ctr,cpc,cpm,actions,action_values';
+
+    const [summaryRes, campaignsRes, dailyRes] = await Promise.all([
+      fetchMeta(`/${account}/insights`, {
+        fields:      insightFields,
+        date_preset: metaPeriod,
+        level:       'account',
+      }),
+      fetchMeta(`/${account}/campaigns`, {
+        fields: `name,status,objective,insights.date_preset(${metaPeriod}){spend,impressions,clicks,ctr,cpc,actions}`,
+        limit:  25,
+      }),
+      fetchMeta(`/${account}/insights`, {
+        fields:         'spend,impressions,clicks,actions',
+        date_preset:    metaPeriod,
+        time_increment: 1,
+      }),
+    ]);
+
+    renderMetaDash(summaryRes.data?.[0], campaignsRes.data, dailyRes.data);
+  } catch (err) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="empty" style="color:var(--red);">
+          Erro ao carregar dados<br>
+          <small style="color:var(--text-tertiary);">${err.message}</small><br><br>
+          <button class="btn-secondary" onclick="toggleMetaConfig()">Verificar credenciais</button>
+        </div>
+      </div>`;
+  }
+}
+
+function renderMetaDash(summary, campaigns, daily) {
+  const el = document.getElementById('meta-content');
+
+  if (!summary) {
+    el.innerHTML = '<div class="card"><div class="empty">Nenhum dado encontrado para este período.<br>Verifique se há campanhas com veiculação na conta.</div></div>';
+    return;
+  }
+
+  const spend       = parseFloat(summary.spend       || 0);
+  const impressions = parseInt(summary.impressions   || 0);
+  const clicks      = parseInt(summary.clicks        || 0);
+  const reach       = parseInt(summary.reach         || 0);
+  const ctr         = parseFloat(summary.ctr         || 0);
+  const cpc         = parseFloat(summary.cpc         || 0);
+  const cpm         = parseFloat(summary.cpm         || 0);
+  const freq        = parseFloat(summary.frequency   || 0);
+  const leads       = getActionVal(summary.actions,       LEAD_TYPES);
+  const conversions = getActionVal(summary.actions,       CONV_TYPES);
+  const revenue     = getActionVal(summary.action_values, CONV_TYPES);
+  const cpl         = leads ? spend / leads : 0;
+  const roas        = spend ? revenue / spend : 0;
+
+  const roasClass   = roas >= 3 ? 'roas-good' : roas >= 1 ? 'roas-warn' : spend ? 'roas-bad' : '';
+
+  // Campaign rows
+  const campRows = (campaigns || []).map(c => {
+    const ins  = c.insights?.data?.[0] || {};
+    const cs   = parseFloat(ins.spend       || 0);
+    const ci   = parseInt(ins.impressions   || 0);
+    const cc   = parseInt(ins.clicks        || 0);
+    const cl   = getActionVal(ins.actions, LEAD_TYPES);
+    const cctr = parseFloat(ins.ctr || 0);
+    const ccpc = parseFloat(ins.cpc || 0);
+    const badgeClass = c.status === 'ACTIVE' ? 'badge-active' : c.status === 'PAUSED' ? 'badge-paused' : 'badge-other';
+    const badgeLabel = c.status === 'ACTIVE' ? 'Ativa' : c.status === 'PAUSED' ? 'Pausada' : c.status;
+    return `<tr>
+      <td>
+        <span class="meta-badge ${badgeClass}">${badgeLabel}</span>
+        <span style="margin-left:6px;">${c.name}</span>
+      </td>
+      <td>${brl(cs)}</td>
+      <td>${num(ci)}</td>
+      <td>${num(cc)}</td>
+      <td>${cctr.toFixed(2)}%</td>
+      <td>${ccpc ? brl2(ccpc) : '—'}</td>
+      <td>${cl ? Math.round(cl) : '—'}</td>
+      <td>${cl && cs ? brl2(cs / cl) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Sync bar (shown only when leads data is available)
+  const today = new Date().toISOString().slice(0, 10);
+  const syncBar = leads > 0 ? `
+    <div class="sync-bar">
+      <p>Dados de hoje prontos: <strong>${brl2(spend)}</strong> investidos, <strong>${Math.round(leads)}</strong> leads capturados.</p>
+      <button class="btn-sync" onclick="syncToFunil(${spend}, ${Math.round(leads)})">
+        Sincronizar com Funil
+      </button>
+    </div>` : '';
+
+  el.innerHTML = `
+    <!-- Visão geral -->
+    <div class="card">
+      <div class="section-label">Visão geral — conta</div>
+      <div class="grid4" style="margin-bottom:1rem;">
+        <div class="mcard"><div class="lbl">Investido</div><div class="val">${brl(spend)}</div></div>
+        <div class="mcard"><div class="lbl">Impressões</div><div class="val">${impressions >= 1000 ? (impressions/1000).toFixed(1)+'k' : num(impressions)}</div></div>
+        <div class="mcard"><div class="lbl">Cliques</div><div class="val">${num(clicks)}</div></div>
+        <div class="mcard"><div class="lbl">Alcance</div><div class="val">${reach >= 1000 ? (reach/1000).toFixed(1)+'k' : num(reach)}</div></div>
+      </div>
+      <div class="grid4">
+        <div class="mcard"><div class="lbl">CTR</div><div class="val">${ctr.toFixed(2)}%</div></div>
+        <div class="mcard"><div class="lbl">CPC</div><div class="val">${cpc ? brl2(cpc) : '—'}</div></div>
+        <div class="mcard"><div class="lbl">CPM</div><div class="val">${cpm ? brl2(cpm) : '—'}</div></div>
+        <div class="mcard"><div class="lbl">Frequência</div><div class="val">${freq ? freq.toFixed(1)+'x' : '—'}</div></div>
+      </div>
+    </div>
+
+    <!-- Conversões -->
+    ${leads || conversions || revenue ? `
+    <div class="card">
+      <div class="section-label">Conversões e resultado</div>
+      <div class="grid4">
+        ${leads       ? `<div class="mcard"><div class="lbl">Leads</div><div class="val">${Math.round(leads)}</div></div>` : ''}
+        ${cpl         ? `<div class="mcard"><div class="lbl">CPL (custo/lead)</div><div class="val">${brl2(cpl)}</div></div>` : ''}
+        ${conversions ? `<div class="mcard"><div class="lbl">Compras</div><div class="val">${Math.round(conversions)}</div></div>` : ''}
+        ${revenue     ? `<div class="mcard"><div class="lbl">Receita atribuída</div><div class="val">${brl(revenue)}</div></div>` : ''}
+        ${roas        ? `<div class="mcard"><div class="lbl">ROAS</div><div class="val ${roasClass}">${roas.toFixed(2)}x</div><div class="sub">${roas >= 3 ? 'Excelente' : roas >= 1 ? 'Positivo' : 'Abaixo do break-even'}</div></div>` : ''}
+      </div>
+      ${syncBar}
+    </div>` : ''}
+
+    <!-- Por campanha -->
+    <div class="card">
+      <div class="section-label">Por campanha</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Campanha</th>
+              <th>Investido</th>
+              <th>Impressões</th>
+              <th>Cliques</th>
+              <th>CTR</th>
+              <th>CPC</th>
+              <th>Leads</th>
+              <th>CPL</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${campRows || '<tr><td colspan="8" class="empty" style="padding:2rem;">Nenhuma campanha no período.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráfico diário -->
+    <div class="card">
+      <div class="section-label">Evolução diária</div>
+      <div class="chart-wrap"><canvas id="meta-chart-canvas"></canvas></div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#1877F2;"></span>Investimento (R$)</span>
+        <span><span class="legend-dot" style="background:#85B7EB;"></span>Cliques</span>
+      </div>
+    </div>
+  `;
+
+  // Build daily chart
+  if (metaChart) { metaChart.destroy(); metaChart = null; }
+  if (daily && daily.length) {
+    const labels    = daily.map(d => d.date_start.slice(5));
+    const spendData = daily.map(d => parseFloat(d.spend  || 0));
+    const clickData = daily.map(d => parseInt(d.clicks   || 0));
+
+    metaChart = new Chart(document.getElementById('meta-chart-canvas'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'Investimento', data: spendData, backgroundColor:'#1877F2', borderRadius:3, yAxisID:'y'  },
+          { label:'Cliques',      data: clickData, backgroundColor:'#85B7EB', borderRadius:3, yAxisID:'y1' },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display:false } },
+        scales: {
+          x:  { ticks:{ font:{size:11}, autoSkip:true, maxRotation:45 }, grid:{ display:false } },
+          y:  { ticks:{ font:{size:11}, callback: v => 'R$'+v }, grid:{ color:'rgba(128,128,128,0.1)' }, position:'left'  },
+          y1: { ticks:{ font:{size:11} }, grid:{ display:false }, position:'right' },
+        }
+      }
+    });
+  }
+}
+
+// ── Sync Meta → Funil ─────────────────────────────────────────────────────────
+function syncToFunil(spend, leads) {
+  // Switch to input tab
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active','meta-active'));
+  document.querySelector('[data-tab="input"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-input').classList.add('active');
+
+  document.getElementById('f-invest').value = spend.toFixed(2);
+  document.getElementById('f-leads').value  = leads;
+
+  // Highlight the filled fields
+  ['f-invest','f-leads'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--green)';
+    setTimeout(() => el.style.borderColor = '', 2500);
+  });
+
+  showAlert(`Meta Ads sincronizado — ${brl2(spend)} investidos e ${leads} leads carregados. Complete os outros campos e salve.`, 'success');
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

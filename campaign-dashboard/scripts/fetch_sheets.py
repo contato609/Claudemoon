@@ -15,7 +15,7 @@ from googleapiclient.errors import HttpError
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SHEET_ID    = os.environ.get('SHEET_ID', '1EZfXPVkZFECR4apLqiS1HFYUgRYytEkR9rdEIDM1h-o')
-SHEET_RANGE = os.environ.get('SHEET_RANGE', 'Sheet1')
+SHEET_RANGE = os.environ.get('SHEET_RANGE') or 'Sheet1'
 OUTPUT_FILE = os.path.join(os.path.dirname(__file__), '..', 'data.json')
 
 NUMERIC_HINTS = {

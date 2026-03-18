@@ -6,6 +6,7 @@
 <title>Digital Moon — Funil Comercial</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -432,6 +433,7 @@
     <button class="nav-btn"        data-tab="dashboard" onclick="switchTab('dashboard',this)">Dashboard</button>
     <button class="nav-btn"        data-tab="historico" onclick="switchTab('historico',this)">Histórico</button>
     <button class="nav-btn"        data-tab="metaads"   onclick="switchTab('metaads',this)">Meta Ads</button>
+    <button class="nav-btn"        data-tab="planilha"  onclick="switchTab('planilha',this)">Planilha</button>
   </nav>
 </header>
 
@@ -539,6 +541,54 @@
     <div id="meta-content"></div>
   </div>
 
+
+  <!-- ── PLANILHA ──────────────────────────────────────────────────────── -->
+  <div id="page-planilha" class="page">
+    <div class="page-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#1D9E75"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3l4 4h-3v4h-2v-4H8l4-4zm-5 9h10v2H7v-2z"/></svg>
+      Google Sheets
+    </div>
+
+    <div class="card" id="sheets-auth-card">
+      <div class="card-header" style="margin-bottom:0;">
+        <span class="card-title">Conexão com Google</span>
+        <span id="sheets-status-badge" style="font-size:12px;color:var(--text-tertiary);">Desconectado</span>
+      </div>
+      <div id="sheets-auth-area" style="margin-top:1rem;">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem;">
+          Faça login com sua conta Google para ler os dados da planilha.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-primary" id="sheets-login-btn" onclick="sheetsLogin()" style="width:auto;margin-top:0;padding:9px 20px;">
+            Entrar com Google
+          </button>
+          <button class="btn-secondary" id="sheets-logout-btn" onclick="sheetsLogout()" style="display:none;">
+            Desconectar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="sheets-range-card" style="display:none;">
+      <div class="card-header" style="margin-bottom:0.75rem;">
+        <span class="card-title">Dados da planilha</span>
+        <button class="btn-secondary" onclick="sheetsLoadData()" id="sheets-refresh-btn" style="font-size:12px;padding:5px 12px;">
+          Atualizar
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+        <div class="field" style="margin-bottom:0;flex:1;min-width:140px;">
+          <label>Aba e intervalo</label>
+          <input type="text" id="sheets-range-input" value="Sheet1" placeholder="ex: Sheet1 ou Plan1!A1:Z100">
+        </div>
+        <button class="btn-primary" onclick="sheetsLoadData()" style="width:auto;margin-top:1.25rem;padding:8px 18px;font-size:13px;">
+          Buscar
+        </button>
+      </div>
+      <div id="sheets-content"><div class="empty">Clique em "Buscar" para carregar os dados.</div></div>
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <script>
@@ -599,6 +649,7 @@ function switchTab(name, el) {
   if (name === 'dashboard') renderDash();
   if (name === 'historico') renderHist();
   if (name === 'metaads')   initMetaPage();
+  if (name === 'planilha')  updateSheetsStatus(!!gsAccessToken);
 }
 
 // ── Alert ─────────────────────────────────────────────────────────────────────
@@ -1102,6 +1153,134 @@ function syncToFunil(spend, leads) {
 
   showAlert(`Meta Ads sincronizado — ${brl2(spend)} investidos e ${leads} leads carregados. Complete os outros campos e salve.`, 'success');
 }
+
+// ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
+const GS_CLIENT_ID    = '846712075564-v16a0tuv2ltpcn9unten4enin5tdu91t.apps.googleusercontent.com';
+const GS_SHEET_ID     = '1EZfXPVkZFECR4apLqiS1HFYUgRYytEkR9rdEIDM1h-o';
+const GS_SCOPE        = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const GS_SHEETS_API   = 'https://sheets.googleapis.com/v4/spreadsheets';
+
+let gsTokenClient = null;
+let gsAccessToken = null;
+
+function initSheetsClient() {
+  if (!window.google) return;
+  gsTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GS_CLIENT_ID,
+    scope:     GS_SCOPE,
+    callback:  (resp) => {
+      if (resp.error) { console.error('GIS error:', resp); return; }
+      gsAccessToken = resp.access_token;
+      updateSheetsStatus(true);
+      sheetsLoadData();
+    },
+  });
+}
+
+function sheetsLogin() {
+  if (!window.google) {
+    alert('A biblioteca do Google ainda está carregando. Aguarde um instante e tente novamente.');
+    return;
+  }
+  if (!gsTokenClient) initSheetsClient();
+  gsTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+function sheetsLogout() {
+  if (gsAccessToken) {
+    google.accounts.oauth2.revoke(gsAccessToken, () => {});
+    gsAccessToken = null;
+  }
+  updateSheetsStatus(false);
+  document.getElementById('sheets-content').innerHTML = '<div class="empty">Clique em "Buscar" para carregar os dados.</div>';
+}
+
+function updateSheetsStatus(connected) {
+  const badge     = document.getElementById('sheets-status-badge');
+  const loginBtn  = document.getElementById('sheets-login-btn');
+  const logoutBtn = document.getElementById('sheets-logout-btn');
+  const rangeCard = document.getElementById('sheets-range-card');
+
+  if (connected) {
+    badge.textContent  = 'Conectado';
+    badge.style.color  = 'var(--green)';
+    loginBtn.style.display  = 'none';
+    logoutBtn.style.display = '';
+    rangeCard.style.display = '';
+  } else {
+    badge.textContent  = 'Desconectado';
+    badge.style.color  = 'var(--text-tertiary)';
+    loginBtn.style.display  = '';
+    logoutBtn.style.display = 'none';
+    rangeCard.style.display = 'none';
+  }
+}
+
+async function sheetsLoadData() {
+  if (!gsAccessToken) { sheetsLogin(); return; }
+
+  const range   = document.getElementById('sheets-range-input').value.trim() || 'Sheet1';
+  const content = document.getElementById('sheets-content');
+  content.innerHTML = '<div class="loading">Carregando dados da planilha…</div>';
+
+  try {
+    const url = `${GS_SHEETS_API}/${GS_SHEET_ID}/values/${encodeURIComponent(range)}`;
+    const res  = await fetch(url, { headers: { Authorization: 'Bearer ' + gsAccessToken } });
+    const data = await res.json();
+
+    if (data.error) {
+      if (data.error.code === 401) {
+        gsAccessToken = null;
+        updateSheetsStatus(false);
+        content.innerHTML = '<div class="empty" style="color:var(--red);">Sessão expirada. Faça login novamente.</div>';
+        return;
+      }
+      throw new Error(data.error.message);
+    }
+
+    const rows = data.values;
+    if (!rows || !rows.length) {
+      content.innerHTML = '<div class="empty">Nenhum dado encontrado no intervalo especificado.</div>';
+      return;
+    }
+
+    const header = rows[0];
+    const body   = rows.slice(1);
+
+    content.innerHTML = `
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:0.75rem;">
+        ${rows.length - 1} linha(s) · ${header.length} coluna(s)
+      </p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>${header.map(h => `<th>${h}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${body.map(row =>
+              `<tr>${header.map((_, i) => `<td>${row[i] ?? ''}</td>`).join('')}</tr>`
+            ).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch (err) {
+    content.innerHTML = `
+      <div class="empty" style="color:var(--red);">
+        Erro ao carregar planilha<br>
+        <small style="color:var(--text-tertiary);">${err.message}</small>
+      </div>`;
+  }
+}
+
+// Init GIS when library is ready (it loads async)
+window.addEventListener('load', () => {
+  if (window.google) initSheetsClient();
+  else {
+    const t = setInterval(() => {
+      if (window.google) { clearInterval(t); initSheetsClient(); }
+    }, 300);
+  }
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('entry-date').value = new Date().toISOString().slice(0, 10);

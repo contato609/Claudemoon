@@ -419,6 +419,154 @@
     color: var(--green-text);
     flex: 1;
   }
+  /* GoHighLevel + Mega RP */
+  --ghl-color: #0D9488;
+  .nav-btn.ghl-active {
+    background: #CCFBF1;
+    color: #0F766E;
+    font-weight: 500;
+  }
+  .btn-ghl {
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #0D9488;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-ghl:hover { opacity: 0.88; }
+  .btn-ghl:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-mrp {
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #7C3AED;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-mrp:hover { opacity: 0.88; }
+  .integration-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-top: 0.75rem;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 80px;
+  }
+  .flow-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .flow-icon.mrp  { background: #EDE9FE; }
+  .flow-icon.ghl  { background: #CCFBF1; }
+  .flow-icon.sms  { background: var(--green-bg); }
+  .flow-label { font-size: 11px; color: var(--text-secondary); text-align: center; line-height: 1.3; }
+  .flow-arrow { font-size: 18px; color: var(--text-tertiary); flex-shrink: 0; }
+  .webhook-box {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    word-break: break-all;
+    cursor: pointer;
+    position: relative;
+  }
+  .webhook-box:hover { border-color: var(--accent); }
+  .webhook-copy-hint {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+  .contact-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 12px 5px 6px;
+    font-size: 13px;
+  }
+  .contact-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #CCFBF1;
+    color: #0F766E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .contacts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0.75rem;
+  }
+  .opp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+    gap: 10px;
+  }
+  .opp-row:last-child { border-bottom: none; }
+  .opp-name { font-size: 13px; }
+  .opp-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .badge-won    { background: var(--green-bg); color: var(--green-text); }
+  .badge-lost   { background: var(--red-bg);   color: var(--red-text);   }
+  .badge-open   { background: #EDE9FE;           color: #5B21B6;           }
+  .event-log-row {
+    font-size: 12px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .event-log-row:last-child { border-bottom: none; }
+  .event-time { color: var(--text-tertiary); flex-shrink: 0; }
+  .event-type { font-weight: 500; }
+  .status-dot-ghl {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #0D9488;
+    flex-shrink: 0;
+  }
+  .status-dot-mrp {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #7C3AED;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -432,6 +580,7 @@
     <button class="nav-btn"        data-tab="dashboard" onclick="switchTab('dashboard',this)">Dashboard</button>
     <button class="nav-btn"        data-tab="historico" onclick="switchTab('historico',this)">Histórico</button>
     <button class="nav-btn"        data-tab="metaads"   onclick="switchTab('metaads',this)">Meta Ads</button>
+    <button class="nav-btn"        data-tab="ghl"       onclick="switchTab('ghl',this)">GoHighLevel</button>
   </nav>
 </header>
 
@@ -539,6 +688,123 @@
     <div id="meta-content"></div>
   </div>
 
+  <!-- ── GOHIGHLEVEL + MEGA RP ────────────────────────────────────────────── -->
+  <div id="page-ghl" class="page">
+    <div class="page-title" style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#0D9488"/><path d="M8 16a8 8 0 1 1 16 0" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>
+      GoHighLevel + Mega RP
+    </div>
+
+    <!-- Como funciona a integração -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom:0.5rem;">
+        <span class="card-title">Como funciona a integração</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:0.75rem;">
+        O fluxo conecta os jogadores/clientes do <strong>Mega RP</strong> diretamente ao seu CRM <strong>GoHighLevel</strong>, automatizando contatos, tags, pipelines e disparos de mensagens.
+      </p>
+      <div class="integration-flow">
+        <div class="flow-step">
+          <div class="flow-icon mrp">🎮</div>
+          <div class="flow-label">Jogador compra VIP no Mega RP</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon" style="background:#E0F2FE;">🔗</div>
+          <div class="flow-label">Webhook dispara para a integração</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon ghl">📋</div>
+          <div class="flow-label">Contato criado/atualizado no GHL</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-icon sms">💬</div>
+          <div class="flow-label">Automação GHL: SMS / e-mail / tag</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GHL Config -->
+    <div class="card" id="ghl-config-card">
+      <div class="card-header" style="margin-bottom:0;">
+        <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <span class="status-dot-ghl"></span>GoHighLevel
+        </span>
+        <button class="btn-secondary" onclick="toggleGHLConfig()" id="ghl-config-toggle">Configurar</button>
+      </div>
+      <div id="ghl-status-row" style="margin-top:10px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">Nenhuma conta conectada. Clique em "Configurar" para começar.</span>
+      </div>
+      <div id="ghl-config-panel" class="config-panel" style="display:none;">
+        <div class="grid2" style="margin-bottom:0;">
+          <div class="field">
+            <label>API Key (Private Integration Token)</label>
+            <input type="password" id="ghl-apikey-input" placeholder="eyJhbGci…" autocomplete="off">
+            <span class="help-text">GHL → Configurações → Integrações → Private Integrations → Criar token</span>
+          </div>
+          <div class="field">
+            <label>Location ID</label>
+            <input type="text" id="ghl-location-input" placeholder="abc123XYZ…" autocomplete="off">
+            <span class="help-text">GHL → Configurações → Info da empresa → Location ID</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:1rem;">
+          <button class="btn-ghl" onclick="saveGHLConfig()">Conectar GHL</button>
+          <button class="btn-secondary" onclick="disconnectGHL()">Remover credenciais</button>
+        </div>
+        <p class="help-text" style="margin-top:10px;">
+          Suas credenciais ficam salvas apenas no <strong>localStorage do seu navegador</strong> — nenhum servidor as recebe.
+        </p>
+      </div>
+    </div>
+
+    <!-- Mega RP Webhook Config -->
+    <div class="card" id="mrp-config-card">
+      <div class="card-header" style="margin-bottom:0;">
+        <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <span class="status-dot-mrp"></span>Mega RP — Webhook
+        </span>
+        <button class="btn-secondary" onclick="toggleMRPConfig()" id="mrp-config-toggle">Configurar</button>
+      </div>
+      <div id="mrp-status-row" style="margin-top:10px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">Configure a URL de webhook no painel do Mega RP.</span>
+      </div>
+      <div id="mrp-config-panel" class="config-panel" style="display:none;">
+        <div class="grid2">
+          <div class="field">
+            <label>URL do Webhook (configure no painel Mega RP)</label>
+            <div class="webhook-box" id="mrp-webhook-url" onclick="copyWebhookURL()" title="Clique para copiar">
+              https://seu-servidor.com/api/webhook/megarolvip
+            </div>
+            <span class="webhook-copy-hint">Clique para copiar · Configure esta URL em: Painel Mega RP → Configurações → Webhooks → Novo webhook</span>
+          </div>
+          <div class="field">
+            <label>Segredo do Webhook (para validação)</label>
+            <input type="text" id="mrp-secret-input" placeholder="meu-segredo-123" autocomplete="off">
+            <span class="help-text">Mesmo valor configurado no campo "Secret" do webhook do Mega RP</span>
+          </div>
+        </div>
+        <div class="section-label" style="margin-top:1rem;">Mapeamento de eventos → tags no GHL</div>
+        <div class="grid2">
+          <div class="field"><label>Evento: vip_purchase → Tag GHL</label><input type="text" id="mrp-tag-purchase" placeholder="mega-rp-vip" value="mega-rp-vip"></div>
+          <div class="field"><label>Evento: vip_expired → Tag GHL</label><input type="text" id="mrp-tag-expired" placeholder="mega-rp-expirado" value="mega-rp-expirado"></div>
+          <div class="field"><label>Evento: player_join → Tag GHL</label><input type="text" id="mrp-tag-join" placeholder="mega-rp-player" value="mega-rp-player"></div>
+          <div class="field"><label>Evento: vip_renew → Tag GHL</label><input type="text" id="mrp-tag-renew" placeholder="mega-rp-renovado" value="mega-rp-renovado"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:1rem;">
+          <button class="btn-mrp" onclick="saveMRPConfig()">Salvar configuração</button>
+          <button class="btn-secondary" onclick="simulateMRPEvent()">Simular evento VIP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic GHL content -->
+    <div id="ghl-content"></div>
+
+  </div>
+
 </div><!-- /container -->
 
 <script>
@@ -588,9 +854,10 @@ async function removeEntry(date) {
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(name, el) {
   document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.remove('active', 'meta-active');
+    b.classList.remove('active', 'meta-active', 'ghl-active');
   });
   if (name === 'metaads') el.classList.add('meta-active');
+  else if (name === 'ghl') el.classList.add('ghl-active');
   else el.classList.add('active');
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -599,6 +866,11 @@ function switchTab(name, el) {
   if (name === 'dashboard') renderDash();
   if (name === 'historico') renderHist();
   if (name === 'metaads')   initMetaPage();
+  if (name === 'ghl')       initGHLPage();
+}
+
+function ghlActiveClass(el) {
+  el.classList.add('ghl-active');
 }
 
 // ── Alert ─────────────────────────────────────────────────────────────────────
@@ -1101,6 +1373,305 @@ function syncToFunil(spend, leads) {
   });
 
   showAlert(`Meta Ads sincronizado — ${brl2(spend)} investidos e ${leads} leads carregados. Complete os outros campos e salve.`, 'success');
+}
+
+// ── GoHighLevel + Mega RP ─────────────────────────────────────────────────────
+const GHL_BASE = 'https://services.leadconnectorhq.com';
+const GHL_VER  = '2021-07-28';
+
+function ghlCreds() {
+  return {
+    apiKey:     localStorage.getItem('ghl_apikey')     || '',
+    locationId: localStorage.getItem('ghl_locationid') || '',
+  };
+}
+function mrpConfig() {
+  return {
+    secret:     localStorage.getItem('mrp_secret')      || '',
+    tagPurchase:localStorage.getItem('mrp_tag_purchase')|| 'mega-rp-vip',
+    tagExpired: localStorage.getItem('mrp_tag_expired') || 'mega-rp-expirado',
+    tagJoin:    localStorage.getItem('mrp_tag_join')    || 'mega-rp-player',
+    tagRenew:   localStorage.getItem('mrp_tag_renew')   || 'mega-rp-renovado',
+  };
+}
+
+async function fetchGHL(path, params = {}) {
+  const { apiKey, locationId } = ghlCreds();
+  if (!apiKey) throw new Error('API Key do GoHighLevel não configurada.');
+  const url = new URL(GHL_BASE + path);
+  if (locationId && !params.locationId && !params.location_id) params.locationId = locationId;
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString(), {
+    headers: {
+      'Authorization': 'Bearer ' + apiKey,
+      'Version':       GHL_VER,
+      'Content-Type':  'application/json',
+    }
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body.message || body.msg || res.statusText) + ' (HTTP ' + res.status + ')');
+  }
+  return res.json();
+}
+
+// ── GHL Config UI ─────────────────────────────────────────────────────────────
+function toggleGHLConfig() {
+  const panel = document.getElementById('ghl-config-panel');
+  const open  = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  document.getElementById('ghl-config-toggle').textContent = open ? 'Configurar' : 'Fechar';
+  if (!open) {
+    const { apiKey, locationId } = ghlCreds();
+    if (apiKey)     document.getElementById('ghl-apikey-input').value   = apiKey;
+    if (locationId) document.getElementById('ghl-location-input').value = locationId;
+  }
+}
+
+function saveGHLConfig() {
+  const apiKey     = document.getElementById('ghl-apikey-input').value.trim();
+  const locationId = document.getElementById('ghl-location-input').value.trim();
+  if (!apiKey || !locationId) { alert('Preencha o API Key e o Location ID.'); return; }
+  localStorage.setItem('ghl_apikey',     apiKey);
+  localStorage.setItem('ghl_locationid', locationId);
+  document.getElementById('ghl-config-panel').style.display = 'none';
+  document.getElementById('ghl-config-toggle').textContent  = 'Configurar';
+  loadGHLData();
+}
+
+function disconnectGHL() {
+  if (!confirm('Remover credenciais do GoHighLevel?')) return;
+  ['ghl_apikey','ghl_locationid'].forEach(k => localStorage.removeItem(k));
+  document.getElementById('ghl-status-row').innerHTML =
+    '<span style="font-size:13px;color:var(--text-tertiary);">Nenhuma conta conectada. Clique em "Configurar" para começar.</span>';
+  document.getElementById('ghl-content').innerHTML = '';
+}
+
+// ── Mega RP Config UI ─────────────────────────────────────────────────────────
+function toggleMRPConfig() {
+  const panel = document.getElementById('mrp-config-panel');
+  const open  = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  document.getElementById('mrp-config-toggle').textContent = open ? 'Configurar' : 'Fechar';
+  if (!open) {
+    const cfg = mrpConfig();
+    document.getElementById('mrp-secret-input').value  = cfg.secret;
+    document.getElementById('mrp-tag-purchase').value  = cfg.tagPurchase;
+    document.getElementById('mrp-tag-expired').value   = cfg.tagExpired;
+    document.getElementById('mrp-tag-join').value      = cfg.tagJoin;
+    document.getElementById('mrp-tag-renew').value     = cfg.tagRenew;
+  }
+}
+
+function saveMRPConfig() {
+  localStorage.setItem('mrp_secret',       document.getElementById('mrp-secret-input').value.trim());
+  localStorage.setItem('mrp_tag_purchase', document.getElementById('mrp-tag-purchase').value.trim() || 'mega-rp-vip');
+  localStorage.setItem('mrp_tag_expired',  document.getElementById('mrp-tag-expired').value.trim()  || 'mega-rp-expirado');
+  localStorage.setItem('mrp_tag_join',     document.getElementById('mrp-tag-join').value.trim()     || 'mega-rp-player');
+  localStorage.setItem('mrp_tag_renew',    document.getElementById('mrp-tag-renew').value.trim()    || 'mega-rp-renovado');
+  document.getElementById('mrp-config-panel').style.display = 'none';
+  document.getElementById('mrp-config-toggle').textContent  = 'Configurar';
+  const cfg = mrpConfig();
+  document.getElementById('mrp-status-row').innerHTML = `
+    <div class="connected-row">
+      <div class="dot-live" style="background:#7C3AED;"></div>
+      <span style="font-size:13px;">Configurado · Tags: <strong>${cfg.tagPurchase}</strong>, <strong>${cfg.tagExpired}</strong>, <strong>${cfg.tagJoin}</strong>, <strong>${cfg.tagRenew}</strong></span>
+    </div>`;
+  renderEventLog();
+}
+
+function copyWebhookURL() {
+  const url = document.getElementById('mrp-webhook-url').textContent.trim();
+  navigator.clipboard.writeText(url).then(() => {
+    const el = document.getElementById('mrp-webhook-url');
+    const orig = el.textContent;
+    el.textContent = '✓ Copiado!';
+    setTimeout(() => el.textContent = orig, 1500);
+  });
+}
+
+// ── Simular evento Mega RP ────────────────────────────────────────────────────
+function simulateMRPEvent() {
+  const events = JSON.parse(localStorage.getItem('mrp_events') || '[]');
+  const types  = ['vip_purchase','vip_renew','player_join','vip_expired'];
+  const names  = ['João Silva','Maria Santos','Pedro Costa','Ana Lima','Carlos Rocha'];
+  const phones = ['+5511999990001','+5511999990002','+5511999990003','+5511999990004','+5511999990005'];
+  const idx    = Math.floor(Math.random() * names.length);
+  const event  = {
+    type:      types[Math.floor(Math.random() * types.length)],
+    player:    names[idx],
+    phone:     phones[idx],
+    plan:      ['VIP Bronze','VIP Prata','VIP Ouro'][Math.floor(Math.random() * 3)],
+    value:     [29.90, 49.90, 89.90][Math.floor(Math.random() * 3)],
+    timestamp: new Date().toISOString(),
+  };
+  events.unshift(event);
+  localStorage.setItem('mrp_events', JSON.stringify(events.slice(0, 20)));
+  renderEventLog();
+  alert(`Evento simulado: ${event.type} · ${event.player} · ${event.plan}`);
+}
+
+// ── GHL Page Init ─────────────────────────────────────────────────────────────
+function initGHLPage() {
+  const { apiKey } = ghlCreds();
+  const cfg        = mrpConfig();
+
+  // GHL status row
+  if (apiKey) {
+    const { locationId } = ghlCreds();
+    document.getElementById('ghl-status-row').innerHTML = `
+      <div class="connected-row">
+        <div class="dot-live"></div>
+        <span style="font-size:13px;">Conectado · Location: <strong>${locationId.slice(0,8)}…</strong></span>
+      </div>`;
+    loadGHLData();
+  }
+
+  // MRP status row
+  if (cfg.secret) {
+    document.getElementById('mrp-status-row').innerHTML = `
+      <div class="connected-row">
+        <div class="dot-live" style="background:#7C3AED;"></div>
+        <span style="font-size:13px;">Configurado · Tags: <strong>${cfg.tagPurchase}</strong>, <strong>${cfg.tagExpired}</strong>, <strong>${cfg.tagJoin}</strong>, <strong>${cfg.tagRenew}</strong></span>
+      </div>`;
+  }
+
+  renderEventLog();
+}
+
+// ── Load GHL data ─────────────────────────────────────────────────────────────
+async function loadGHLData() {
+  const el = document.getElementById('ghl-content');
+  el.innerHTML = '<div class="loading" style="padding:2rem 0;">Carregando dados do GoHighLevel…</div>';
+  try {
+    const [contactsRes, oppsRes] = await Promise.all([
+      fetchGHL('/contacts/', { limit: 20 }),
+      fetchGHL('/opportunities/search', { location_id: ghlCreds().locationId, limit: 20 }),
+    ]);
+    renderGHLDash(contactsRes, oppsRes);
+  } catch (err) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="empty" style="color:var(--red);">
+          Erro ao carregar dados do GHL<br>
+          <small style="color:var(--text-tertiary);">${err.message}</small><br><br>
+          <button class="btn-secondary" onclick="toggleGHLConfig()">Verificar credenciais</button>
+        </div>
+      </div>`;
+  }
+}
+
+function renderGHLDash(contactsRes, oppsRes) {
+  const el       = document.getElementById('ghl-content');
+  const contacts = contactsRes.contacts || [];
+  const opps     = (oppsRes.opportunities || []);
+
+  const total     = contactsRes.total || contacts.length;
+  const openOpps  = opps.filter(o => o.status === 'open').length;
+  const wonOpps   = opps.filter(o => o.status === 'won').length;
+  const pipeValue = opps.reduce((s, o) => s + (parseFloat(o.monetaryValue) || 0), 0);
+
+  const contactChips = contacts.slice(0, 12).map(c => {
+    const name    = (c.firstName || '') + ' ' + (c.lastName || '');
+    const initials= (c.firstName?.[0] || '') + (c.lastName?.[0] || '') || c.email?.[0]?.toUpperCase() || '?';
+    return `<div class="contact-chip"><div class="contact-avatar">${initials.trim()}</div>${name.trim() || c.email || '—'}</div>`;
+  }).join('');
+
+  const oppRows = opps.slice(0, 10).map(o => {
+    const statusMap = { open:'open', won:'won', lost:'lost', abandoned:'lost' };
+    const badgeMap  = { open:'badge-open', won:'badge-won', lost:'badge-lost', abandoned:'badge-lost' };
+    const labelMap  = { open:'Aberta', won:'Ganha', lost:'Perdida', abandoned:'Abandonada' };
+    const s = o.status || 'open';
+    return `<div class="opp-row">
+      <div>
+        <div class="opp-name">${o.name || '—'}</div>
+        <div class="opp-meta">${o.contact?.name || ''} · ${o.pipeline?.name || ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        ${o.monetaryValue ? `<span style="font-size:13px;font-weight:500;">${brl(o.monetaryValue)}</span>` : ''}
+        <span class="meta-badge ${badgeMap[s]}">${labelMap[s] || s}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="section-label">Resumo da conta</div>
+      <div class="grid4">
+        <div class="mcard"><div class="lbl">Total contatos</div><div class="val">${total}</div></div>
+        <div class="mcard"><div class="lbl">Oport. abertas</div><div class="val" style="color:#7C3AED;">${openOpps}</div></div>
+        <div class="mcard"><div class="lbl">Ganhas</div><div class="val" style="color:var(--green);">${wonOpps}</div></div>
+        <div class="mcard"><div class="lbl">Valor no pipeline</div><div class="val">${brl(pipeValue)}</div></div>
+      </div>
+    </div>
+
+    ${contacts.length ? `
+    <div class="card">
+      <div class="section-label">Contatos recentes (${contacts.length})</div>
+      <div class="contacts-grid">${contactChips}</div>
+    </div>` : ''}
+
+    ${opps.length ? `
+    <div class="card">
+      <div class="section-label">Oportunidades (${opps.length})</div>
+      ${oppRows || '<div class="empty">Nenhuma oportunidade encontrada.</div>'}
+    </div>` : ''}
+
+    <div class="card" id="ghl-event-log-card">
+      <div class="card-header" style="margin-bottom:0.5rem;">
+        <span class="card-title">Log de eventos Mega RP → GHL</span>
+        <button class="btn-secondary" onclick="clearEventLog()">Limpar log</button>
+      </div>
+      <div id="ghl-event-log"></div>
+    </div>
+  `;
+
+  renderEventLog();
+}
+
+// ── Event Log ─────────────────────────────────────────────────────────────────
+function renderEventLog() {
+  const logEl = document.getElementById('ghl-event-log');
+  if (!logEl) return;
+  const events = JSON.parse(localStorage.getItem('mrp_events') || '[]');
+  const cfg    = mrpConfig();
+  const tagMap = {
+    vip_purchase: cfg.tagPurchase,
+    vip_renew:    cfg.tagRenew,
+    player_join:  cfg.tagJoin,
+    vip_expired:  cfg.tagExpired,
+  };
+  const labelMap = {
+    vip_purchase: '💳 VIP comprado',
+    vip_renew:    '🔄 VIP renovado',
+    player_join:  '🎮 Player entrou',
+    vip_expired:  '⏰ VIP expirado',
+  };
+  if (!events.length) {
+    logEl.innerHTML = '<div class="empty" style="padding:1rem 0;">Nenhum evento registrado.<br><small>Use "Simular evento VIP" para testar o fluxo.</small></div>';
+    return;
+  }
+  logEl.innerHTML = events.map(ev => {
+    const time = new Date(ev.timestamp).toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
+    const tag  = tagMap[ev.type] || ev.type;
+    return `<div class="event-log-row">
+      <span class="event-time">${time}</span>
+      <div style="flex:1;">
+        <span class="event-type">${labelMap[ev.type] || ev.type}</span>
+        · ${ev.player} · ${ev.plan}
+        ${ev.value ? '· R$ ' + ev.value.toFixed(2) : ''}
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">
+          Tag GHL: <code>${tag}</code> · Telefone: ${ev.phone}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearEventLog() {
+  if (!confirm('Limpar o log de eventos?')) return;
+  localStorage.removeItem('mrp_events');
+  renderEventLog();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

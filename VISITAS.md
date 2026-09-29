@@ -19,7 +19,7 @@ na conta, para a taxa não cair só porque a visita ainda não aconteceu.
 
 ## Setup (uma vez)
 
-1. **Banco** — no Supabase (projeto `pzwnvuypmwsgnoihkxzq`), SQL Editor → rode
+1. **Banco** — no Supabase (projeto `dtkoiiuhsjaxaalulkwz`), SQL Editor → rode
    `supabase/migrations/20260929000000_visitas_garantidas.sql`
    (ou `supabase db push`). Cria `profiles`, `products`, `visits`, o gatilho que cria o perfil ao criar
    um usuário, as políticas RLS e 3 produtos de exemplo (edite os nomes).

@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Moon — Visitas Garantidas</title>
+<meta name="theme-color" content="#141414">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* Identidade Digital Moon: noite grafite + dourado da lua, conteúdo em papel claro quente. */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* marca */
+    --night: #141414;
+    --night-2: #1f1f1f;
+    --night-ink: #f3efe2;
+    --night-ink-2: #a8a399;
+    --gold: #d4af35;
+    --gold-hover: #c29f2a;
+    --on-gold: #1a1a1a;
+    /* superfícies e texto */
+    --bg-primary: #ffffff;
+    --bg-secondary: #faf8f3;
+    --bg-tertiary: #f3f1ea;
+    --page: #f6f4ee;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5c5a55;
+    --text-tertiary: #8f8b82;
+    --border: rgba(26,26,26,0.09);
+    --border-md: rgba(26,26,26,0.16);
+    --shadow: 0 1px 2px rgba(26,26,26,0.04), 0 4px 16px rgba(26,26,26,0.04);
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    /* acento (dourado) — os nomes blue-* ficam como aliases do acento */
+    --accent: #d4af35;
+    --blue-bg: #fbf3d9;
+    --blue-text: #7a5c0c;
+    /* estados */
+    --green: #1d9e75;
+    --amber: #ba7517;
+    --red: #e24b4a;
+    --green-bg: #e6f4ec;
+    --green-text: #1d5c3f;
+    --amber-bg: #faeeda;
+    --amber-text: #6b3f07;
+    --red-bg: #fcebeb;
+    --red-text: #8a2323;
+    /* gráfico (validado: CVD e contraste) */
+    --series-1: #4a63a8;
+    --series-2: #a9831a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg-primary: #1b1b1b;
+      --bg-secondary: #232323;
+      --bg-tertiary: #2b2b2a;
+      --page: #111111;
+      --text-primary: #f2efe6;
+      --text-secondary: #b3aea3;
+      --text-tertiary: #857f74;
+      --border: rgba(255,255,255,0.08);
+      --border-md: rgba(255,255,255,0.15);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3);
+      --blue-bg: rgba(212,175,53,0.14);
+      --blue-text: #e6c865;
+      --green-bg: #173226; --green-text: #9ed9bb;
+      --amber-bg: #3a2a10; --amber-text: #f2c98a;
+      --red-bg: #3d1a1a; --red-text: #f3aaaa;
+      --series-1: #6f86c6;
+      --series-2: #b08a1e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg-primary: #1b1b1b; --bg-secondary: #232323; --bg-tertiary: #2b2b2a; --page: #111111;
+    --text-primary: #f2efe6; --text-secondary: #b3aea3; --text-tertiary: #857f74;
+    --border: rgba(255,255,255,0.08); --border-md: rgba(255,255,255,0.15); --shadow: 0 1px 2px rgba(0,0,0,0.3);
+    --blue-bg: rgba(212,175,53,0.14); --blue-text: #e6c865;
+    --green-bg: #173226; --green-text: #9ed9bb; --amber-bg: #3a2a10; --amber-text: #f2c98a; --red-bg: #3d1a1a; --red-text: #f3aaaa;
+    --series-1: #6f86c6; --series-2: #b08a1e;
+    color-scheme: dark;
+  }
+  body {
+    font-family: var(--font);
+    background: var(--page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 14.5px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* ── Marca ───────────────────────────────────────────────────────────── */
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; white-space: nowrap; letter-spacing: -0.01em; }
+  .logo-mark { width: 26px; height: 26px; flex: none; }
+  .logo .brand { color: var(--gold); }
+  .logo .product { color: inherit; opacity: 0.9; font-weight: 500; }
+  .logo .sep { width: 1px; height: 16px; background: currentColor; opacity: 0.25; }
+
+  /* ── Login: noite com lua ────────────────────────────────────────────── */
+  .login-wrap {
+    min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center;
+    gap: 48px; padding: 48px max(24px, 6vw); background: var(--night); color: var(--night-ink); position: relative; overflow: hidden;
+  }
+  .login-wrap::before { /* lua */
+    content: ''; position: absolute; width: 150px; height: 150px; border-radius: 50%; top: 5%; right: 4%;
+    background: radial-gradient(circle at 38% 36%, #f1d777, var(--gold) 55%, #9a7a17);
+    box-shadow: 0 0 80px 18px rgba(212,175,53,0.28);
+  }
+  .login-wrap::after { /* estrelas e horizonte */
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(1.5px 1.5px at 12% 22%, rgba(212,175,53,.7), transparent),
+      radial-gradient(1.5px 1.5px at 44% 12%, rgba(212,175,53,.5), transparent),
+      radial-gradient(1.5px 1.5px at 71% 38%, rgba(212,175,53,.6), transparent),
+      radial-gradient(1.5px 1.5px at 28% 64%, rgba(212,175,53,.4), transparent),
+      radial-gradient(1.5px 1.5px at 88% 58%, rgba(212,175,53,.5), transparent),
+      linear-gradient(to top, rgba(44,51,69,.55), transparent 32%);
+  }
+  .login-hero { position: relative; z-index: 1; max-width: 560px; }
+  .login-hero .eyebrow {
+    display: inline-block; font-size: 13px; font-weight: 600; color: var(--gold); letter-spacing: 0.02em;
+    border: 1px solid rgba(212,175,53,.35); background: rgba(212,175,53,.08); padding: 4px 12px; border-radius: 8px; margin: 28px 0 18px;
+  }
+  .login-hero h2 { font-size: clamp(30px, 4.2vw, 50px); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; text-wrap: balance; }
+  .login-hero h2 em { font-style: normal; color: var(--gold); }
+  .login-hero p { margin-top: 16px; color: var(--night-ink-2); font-size: 16px; max-width: 46ch; }
+  .login-card {
+    position: relative; z-index: 1; width: 100%; max-width: 400px; justify-self: center;
+    background: var(--bg-primary); color: var(--text-primary); border-radius: 18px; padding: 32px 28px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(212,175,53,.18);
+  }
+  .login-card h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .login-card p.sub { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 1.25rem; }
+  .link-btn { background: none; border: none; color: var(--blue-text); font-size: 12.5px; font-weight: 500; cursor: pointer; font-family: inherit; margin-top: 12px; }
+  .demo-note { font-size: 12px; color: var(--amber-text); background: var(--amber-bg); padding: 8px 10px; border-radius: var(--radius-md); margin-bottom: 1rem; }
+  @media (max-width: 860px) {
+    .login-wrap { grid-template-columns: 1fr; gap: 28px; padding: 32px 16px 40px; }
+    .login-wrap::before { width: 90px; height: 90px; top: 4%; right: 8%; }
+    .login-hero .eyebrow { margin-top: 8px; }
+    .login-hero p { display: none; }
+  }
+
+  /* ── Header ──────────────────────────────────────────────────────────── */
+  .app-header {
+    background: var(--night); color: var(--night-ink); border-bottom: 1px solid rgba(212,175,53,.14);
+    padding: 0 1.5rem; display: flex; align-items: center; gap: 16px;
+    min-height: 60px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 100; flex-wrap: wrap;
+  }
+  .app-nav { display: flex; gap: 2px; margin-left: auto; flex-wrap: wrap; }
+  .nav-btn {
+    font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 9px; border: none;
+    background: transparent; color: var(--night-ink-2); cursor: pointer; font-family: inherit;
+    transition: background 0.15s, color 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.06); color: var(--night-ink); }
+  .nav-btn.active { background: rgba(212,175,53,.14); color: var(--gold); }
+  .badge { font-size: 11px; font-weight: 600; background: var(--bg-tertiary); color: var(--text-secondary); padding: 0 7px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+  .app-header .badge { background: rgba(255,255,255,.1); color: var(--night-ink); }
+  .nav-btn.active .badge { background: var(--gold); color: var(--on-gold); }
+  .user-box { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--night-ink-2); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .app-header .btn-sm { color: var(--night-ink); border-color: rgba(255,255,255,.18); }
+  .app-header .btn-sm:hover { background: rgba(255,255,255,.06); }
+
+  .container { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 2px; text-wrap: balance; }
+  .page-sub { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 1.25rem; }
+
+  .card { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
+  .card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+  @media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+  .pill-neg { background: #e9ecf8; color: #2f3f73; }
+  :root[data-theme="dark"] .pill-neg { background: rgba(111,134,198,.18); color: #b9c5ea; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill-neg { background: rgba(111,134,198,.18); color: #b9c5ea; } }
+  @media (max-width: 720px) {
+    .grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .app-header { padding: 10px 16px; gap: 10px; }
+    .app-nav { margin-left: 0; order: 3; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .user-box { margin-left: auto; }
+    .user-box #user-name { display: none; }
+    .app-header .logo .sep, .app-header .logo .product { display: none; }
+    .nav-btn { padding: 6px 10px; font-size: 12.5px; white-space: nowrap; }
+    .container { padding: 1.25rem 16px 2.5rem; }
+  }
+  @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* ── Form ────────────────────────────────────────────────────────────── */
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .field label { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+  input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="time"], select, textarea {
+    width: 100%; padding: 9px 11px; font-size: 14px;
+    border: 1px solid var(--border-md); border-radius: var(--radius-md);
+    background: var(--bg-secondary); color: var(--text-primary);
+    outline: none; font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:disabled { opacity: 0.7; }
+  textarea { resize: vertical; min-height: 76px; }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,53,0.2); }
+  .seg { display: flex; gap: 6px; }
+  .seg label {
+    flex: 1; text-align: center; padding: 9px; border: 1px solid var(--border-md); border-radius: var(--radius-md);
+    cursor: pointer; font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary);
+  }
+  .seg input { display: none; }
+  .seg input:checked + span { color: var(--blue-text); font-weight: 600; }
+  .seg label:has(input:checked) { background: var(--blue-bg); border-color: var(--gold); }
+
+  .btn-primary {
+    padding: 10px 18px; font-size: 14px; font-weight: 600; background: var(--gold); color: var(--on-gold);
+    border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 6px 16px rgba(212,175,53,.22);
+  }
+  .btn-primary.block { width: 100%; margin-top: 0.5rem; padding: 12px; }
+  .btn-primary:hover { background: var(--gold-hover); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-secondary {
+    padding: 8px 14px; font-size: 13px; font-weight: 500; background: var(--bg-primary); color: var(--text-primary);
+    border: 1px solid var(--border-md); border-radius: var(--radius-md); cursor: pointer; font-family: inherit;
+  }
+  .btn-secondary:hover { background: var(--bg-tertiary); }
+  .btn-sm { font-size: 12px; font-weight: 500; padding: 5px 11px; border-radius: 8px; cursor: pointer; font-family: inherit; border: 1px solid var(--border-md); background: transparent; color: var(--text-primary); white-space: nowrap; transition: background 0.15s; }
+  .btn-sm:hover { background: var(--bg-tertiary); }
+  .btn-ok { color: var(--green-text); border-color: color-mix(in srgb, var(--green) 55%, transparent); }
+  .btn-ok:hover { background: var(--green-bg); }
+  .btn-no { color: var(--red-text); border-color: color-mix(in srgb, var(--red) 50%, transparent); }
+  .btn-no:hover { background: var(--red-bg); }
+
+  .alert { font-size: 13px; padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 1rem; }
+  .alert-error { background: var(--red-bg); color: var(--red-text); }
+  .alert-success { background: var(--green-bg); color: var(--green-text); }
+
+  /* ── Filtros ─────────────────────────────────────────────────────────── */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .filters select { width: auto; min-width: 180px; font-size: 13px; padding: 7px 10px; background: var(--bg-primary); }
+  .filters .spacer { flex: 1; }
+
+  /* ── Produtos ────────────────────────────────────────────────────────── */
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .product-card {
+    background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.15rem 1.15rem 1.1rem 1.35rem; cursor: pointer; text-align: left; font-family: inherit; color: inherit;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; position: relative; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .product-card:hover, .product-card:focus-visible { border-color: rgba(212,175,53,.6); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(26,26,26,.08); outline: none; }
+  .product-card .p-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .product-card .p-foot .meta { margin-top: 0; }
+  .product-card .p-actions { display: flex; gap: 4px; }
+  .product-card .p-actions .btn-sm { background: var(--bg-primary); font-size: 11px; padding: 3px 9px; }
+  .title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .title-row > .btn-primary { margin-bottom: 1rem; }
+  .btn-danger { padding: 10px 16px; font-size: 14px; font-weight: 600; background: var(--red); color: #fff; border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; }
+  .btn-danger:hover { opacity: 0.9; }
+  .product-card .stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+  .product-card h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 2px; }
+  .product-card .loc { font-size: 12.5px; color: var(--text-secondary); }
+  .product-card .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 12px; font-variant-numeric: tabular-nums; }
+
+  /* ── Calendário ──────────────────────────────────────────────────────── */
+  .cal-head { display: flex; align-items: center; gap: 8px; }
+  .cal-head .month { font-size: 16px; font-weight: 600; min-width: 170px; text-align: center; letter-spacing: -0.01em; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; }
+  .cal-dow { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-align: center; padding: 4px 0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cal-day {
+    min-height: 88px; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 7px;
+    background: var(--bg-primary); cursor: pointer; text-align: left; font-family: inherit; color: inherit;
+    display: flex; flex-direction: column; gap: 3px; transition: border-color 0.15s, background 0.15s;
+  }
+  .cal-day:hover:not(:disabled) { border-color: var(--gold); background: var(--bg-secondary); }
+  .cal-day:disabled { cursor: default; opacity: 0.4; background: transparent; }
+  .cal-day.other { visibility: hidden; }
+  .cal-day.today { border-color: rgba(212,175,53,.55); }
+  .cal-day.today .num { background: var(--gold); color: var(--on-gold); border-radius: 999px; padding: 0 7px; }
+  .cal-day .num { font-size: 12px; font-weight: 600; align-self: flex-start; font-variant-numeric: tabular-nums; }
+  .cal-ev { font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 5px; background: var(--blue-bg); color: var(--blue-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-ev.realizada { background: var(--green-bg); color: var(--green-text); }
+  .cal-ev.nao_compareceu { background: var(--red-bg); color: var(--red-text); text-decoration: line-through; }
+  .cal-more { font-size: 11px; color: var(--text-tertiary); }
+  @media (max-width: 640px) {
+    .cal-grid { gap: 4px; }
+    .cal-day { min-height: 52px; padding: 4px; }
+    .cal-ev { font-size: 0; height: 6px; padding: 0; }
+    .cal-more { display: none; }
+  }
+
+  /* ── Tabelas ─────────────────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-tertiary); padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-secondary); }
+  td.actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill-presencial { background: var(--blue-bg); color: var(--blue-text); }
+  .pill-online { background: var(--bg-tertiary); color: var(--text-secondary); }
+  .pill-late { background: var(--amber-bg); color: var(--amber-text); }
+  .pill-ok { background: var(--green-bg); color: var(--green-text); }
+  .pill-no { background: var(--red-bg); color: var(--red-text); }
+  .pill-sale { background: var(--green-bg); color: var(--green-text); }
+  .subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .subtab {
+    font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border-md);
+    background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .subtab:hover { border-color: var(--gold); }
+  .subtab.active { background: var(--night); color: var(--gold); border-color: var(--gold); }
+  .subtab.active .badge { background: var(--gold); color: var(--on-gold); }
+  .subtab .badge { font-size: 11px; }
+  .money { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .muted { color: var(--text-tertiary); font-size: 12px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .empty { text-align: center; padding: 2.75rem 1rem; color: var(--text-tertiary); font-size: 14px; }
+
+  /* ── Dashboard ───────────────────────────────────────────────────────── */
+  .kpi { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); min-width: 0; }
+  .kpi .lbl { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .kpi .val { font-size: 30px; font-weight: 700; line-height: 1.2; margin-top: 6px; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .kpi .sub { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .kpi.hero { background: var(--night); border-color: var(--night); color: var(--night-ink); position: relative; overflow: hidden; }
+  .kpi.hero::after { content: ''; position: absolute; width: 90px; height: 90px; right: -28px; top: -28px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,53,.5), rgba(212,175,53,0) 70%); }
+  .kpi.hero .lbl { color: var(--gold); }
+  .kpi.hero .val { color: var(--gold); }
+  .kpi.hero .sub { color: var(--night-ink-2); }
+  .chart-wrap { position: relative; width: 100%; height: 250px; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .bar-track { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; background: var(--gold); border-radius: 4px; }
+
+  /* ── Modal ───────────────────────────────────────────────────────────── */
+  .modal-bg { position: fixed; inset: 0; background: rgba(10,10,10,0.55); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+  .modal { background: var(--bg-primary); border-radius: 18px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; padding: 1.5rem 1.4rem 1.2rem; box-shadow: 0 24px 60px rgba(0,0,0,.3); border-top: 3px solid var(--gold); }
+  .modal h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .modal .sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 1rem; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--night); color: var(--night-ink); border: 1px solid rgba(212,175,53,.35); padding: 11px 18px; border-radius: 12px; font-size: 13px; z-index: 300; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
+  /* ── Portal do cliente (somente leitura) ───────────────────────────── */
+  .pt-top { background: var(--night); color: var(--night-ink); border-bottom: 1px solid rgba(212,175,53,.14); }
+  .pt-in { max-width: 1120px; margin: 0 auto; padding: 14px 24px 0; }
+  .pt-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .pt-who { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--night-ink-2); }
+  .pt-who b { color: var(--night-ink); font-weight: 600; }
+  .pt-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+  .pt-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); }
+  .pt-head h1 { margin: 2px 0 0; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+  .pt-head .loc { color: var(--night-ink-2); font-size: 13.5px; }
+  .pt-head select { width: auto; min-width: 200px; background: rgba(255,255,255,.06); color: var(--night-ink); border-color: rgba(255,255,255,.14); }
+  .pt-head select option { color: #1a1a1a; }
+  .pt-tabs { display: flex; gap: 4px; margin-top: 18px; overflow-x: auto; }
+  .pt-tab { border: 0; background: transparent; color: var(--night-ink-2); font-size: 13.5px; font-weight: 500; padding: 10px 14px; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; font-family: inherit; }
+  .pt-tab:hover { color: var(--night-ink); }
+  .pt-tab.on { color: var(--gold); border-bottom-color: var(--gold); }
+  .pt-wrap { max-width: 1120px; margin: 0 auto; padding: 24px 24px 56px; }
+  .pt-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12.5px; color: var(--text-tertiary); }
+  .pt-seg { display: inline-flex; background: var(--bg-primary); border: 1px solid var(--border-md); border-radius: 999px; padding: 3px; }
+  .pt-seg button { border: 0; background: transparent; color: var(--text-secondary); font-size: 12.5px; font-weight: 500; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; }
+  .pt-seg button.on { background: var(--night); color: var(--gold); }
+  .pt-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .pt-two { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 980px) { .pt-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pt-kpis .kpi.hero { grid-column: 1 / -1; } .pt-two { grid-template-columns: 1fr; } }
+  .funnel { display: grid; gap: 12px; }
+  .f-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) 48px; align-items: center; gap: 12px; font-size: 13px; }
+  .f-row .bar { height: 26px; background: var(--bg-tertiary); border-radius: 7px; overflow: hidden; }
+  .f-row .bar i { display: block; height: 100%; border-radius: 7px; background: var(--gold); }
+  .f-row:first-child .bar i { background: var(--series-1); }
+  .f-row .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .f-rate { font-size: 12px; color: var(--text-tertiary); padding-left: 122px; margin-top: -4px; }
+  .pt-item { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); }
+  .pt-item:first-child { border-top: 0; padding-top: 0; }
+  .pt-date { text-align: center; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 5px 0; line-height: 1.1; }
+  .pt-date b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .pt-date span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-tertiary); }
+  .pt-item .t { font-weight: 600; font-size: 13.5px; }
+  .pt-item .s { font-size: 12.5px; color: var(--text-tertiary); }
+  .cal-day.ro { cursor: default; }
+  .cal-day.ro:hover { border-color: var(--border); background: var(--bg-primary); }
+  .cal-day.ro.today:hover { border-color: rgba(212,175,53,.55); }
+  .prod-checks { display: grid; gap: 6px; }
+  .prod-checks label { display: flex; gap: 8px; align-items: center; font-size: 13.5px; color: var(--text-primary); padding: 8px 10px; border: 1px solid var(--border-md); border-radius: 10px; background: var(--bg-secondary); cursor: pointer; }
+  .prod-checks label:has(input:checked) { border-color: var(--gold); background: var(--blue-bg); }
+  .prod-checks input { accent-color: var(--gold); }
+  @media (max-width: 640px) { .pt-in, .pt-wrap { padding-left: 16px; padding-right: 16px; } .pt-who .nm { display: none; } .f-row { grid-template-columns: 92px minmax(0,1fr) 36px; } .f-rate { padding-left: 0; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
+<div id="login-view" class="login-wrap" hidden>
+  <div class="login-hero">
+    <div class="logo"><svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 3.2A13 13 0 1 0 28.8 22 10.5 10.5 0 1 1 20.5 3.2Z" fill="#d4af35"/><rect x="13" y="15" width="2.6" height="9" rx=".6" fill="#d4af35" opacity=".85"/><rect x="16.8" y="11.5" width="2.6" height="12.5" rx=".6" fill="#d4af35"/><rect x="20.6" y="17" width="2.6" height="7" rx=".6" fill="#d4af35" opacity=".7"/></svg><span class="brand">Digital Moon</span></div>
+    <div class="eyebrow">Sistema de Visitas Garantidas™</div>
+    <h2>Do anúncio no celular ao <em>estande de vendas</em>.</h2>
+    <p>Agende visitas por empreendimento, acompanhe quem compareceu e o VGV gerado pela equipe.</p>
+  </div>
+  <form class="login-card" id="login-form">
+    <h1>Entrar</h1>
+    <p class="sub">Equipe Digital Moon ou responsável pelo empreendimento: use o acesso que você recebeu.</p>
+    <div id="demo-note" class="demo-note" hidden>Modo demonstração: dados salvos só neste navegador. Use qualquer e-mail e senha.</div>
+    <div id="login-error" class="alert alert-error" hidden></div>
+    <div id="login-info" class="alert alert-success" hidden></div>
+    <div class="field"><label for="login-email">E-mail</label><input id="login-email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="login-pass">Senha</label><input id="login-pass" type="password" autocomplete="current-password" required></div>
+    <button class="btn-primary block" id="login-btn" type="submit">Entrar</button>
+    <button class="link-btn" type="button" id="forgot-btn">Esqueci minha senha</button>
+  </form>
+</div>
+
+<!-- ══════════════════════ APP ══════════════════════ -->
+<div id="app-view" hidden>
+  <header class="app-header">
+    <div class="logo"><svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 3.2A13 13 0 1 0 28.8 22 10.5 10.5 0 1 1 20.5 3.2Z" fill="#d4af35"/><rect x="13" y="15" width="2.6" height="9" rx=".6" fill="#d4af35" opacity=".85"/><rect x="16.8" y="11.5" width="2.6" height="12.5" rx=".6" fill="#d4af35"/><rect x="20.6" y="17" width="2.6" height="7" rx=".6" fill="#d4af35" opacity=".7"/></svg><span class="brand">Digital Moon</span><span class="sep"></span><span class="product">Visitas Garantidas</span></div>
+    <nav class="app-nav" id="nav">
+      <button class="nav-btn active" data-tab="produtos">Produtos</button>
+      <button class="nav-btn" data-tab="agendadas">Visitas agendadas <span class="badge" id="badge-agendadas">0</span></button>
+      <button class="nav-btn" data-tab="realizadas">Visitas realizadas</button>
+      <button class="nav-btn" data-tab="negociacao">Negociação <span class="badge" id="badge-neg">0</span></button>
+      <button class="nav-btn" data-tab="dashboard">Dashboard</button>
+      <button class="nav-btn" data-tab="admin" id="nav-admin" hidden>Administração</button>
+    </nav>
+    <div class="user-box">
+      <div class="avatar" id="user-avatar">?</div>
+      <span id="user-name"></span>
+      <button class="btn-sm" id="logout-btn">Sair</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ── Produtos ── -->
+    <section class="page active" id="page-produtos">
+      <div id="products-list">
+        <div class="title-row">
+          <div>
+            <div class="page-title">Produtos</div>
+            <div class="page-sub">Escolha o empreendimento para abrir a agenda e marcar uma visita.</div>
+          </div>
+          <button class="btn-primary" id="new-product-btn" hidden>+ Novo produto</button>
+        </div>
+        <div class="products-grid" id="products-grid"></div>
+      </div>
+      <div id="product-calendar" hidden>
+        <button class="btn-sm" id="back-products">← Produtos</button>
+        <div class="page-title" style="margin-top:12px" id="cal-product-name"></div>
+        <div class="page-sub">Clique em um dia para criar o evento de visita.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="cal-head">
+              <button class="btn-sm" id="cal-prev" aria-label="Mês anterior">‹</button>
+              <div class="month" id="cal-month"></div>
+              <button class="btn-sm" id="cal-next" aria-label="Próximo mês">›</button>
+            </div>
+            <button class="btn-secondary" id="cal-today">Hoje</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Visitas agendadas ── -->
+    <section class="page" id="page-agendadas">
+      <div class="page-title">Visitas agendadas</div>
+      <div class="page-sub">Depois da data da visita, ela passa para “Aguardando feedback” até você confirmar se o cliente compareceu.</div>
+      <div class="subtabs" id="ag-subtabs">
+        <button class="subtab active" data-sub="proximas">Agendadas <span class="badge" id="ag-count-proximas">0</span></button>
+        <button class="subtab" data-sub="feedback">Aguardando feedback <span class="badge" id="ag-count-feedback">0</span></button>
+      </div>
+      <div class="filters">
+        <select id="ag-f-product"></select>
+        <select id="ag-f-sdr"></select>
+      </div>
+      <div class="card"><div class="table-wrap" id="ag-table"></div></div>
+    </section>
+
+    <!-- ── Visitas realizadas ── -->
+    <section class="page" id="page-realizadas">
+      <div class="page-title">Visitas realizadas</div>
+      <div class="page-sub">Registre o resultado: “Vendeu” pede o VGV, “Não vendeu” pede o motivo e “Negociação” leva o lead para a mesa.</div>
+      <div class="subtabs" id="re-subtabs">
+        <button class="subtab active" data-sub="compareceu">Compareceu <span class="badge" id="re-count-compareceu">0</span></button>
+        <button class="subtab" data-sub="nao_compareceu">Não compareceu <span class="badge" id="re-count-nao_compareceu">0</span></button>
+        <button class="subtab" data-sub="vendeu">Vendeu <span class="badge" id="re-count-vendeu">0</span></button>
+        <button class="subtab" data-sub="nao_vendeu">Não vendeu <span class="badge" id="re-count-nao_vendeu">0</span></button>
+      </div>
+      <div class="filters">
+        <select id="re-f-product"></select>
+        <select id="re-f-sdr"></select>
+      </div>
+      <div class="card"><div class="table-wrap" id="re-table"></div></div>
+    </section>
+
+    <!-- ── Negociação ── -->
+    <section class="page" id="page-negociacao">
+      <div class="page-title">Negociação</div>
+      <div class="page-sub">Leads que compareceram e foram para a mesa: proposta e contraproposta. Feche como vendeu, não vendeu ou devolva para reagendar.</div>
+      <div class="filters">
+        <select id="ng-f-product"></select>
+        <select id="ng-f-sdr"></select>
+      </div>
+      <div class="card"><div class="table-wrap" id="ng-table"></div></div>
+    </section>
+
+    <!-- ── Dashboard ── -->
+    <section class="page" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="db-sub">Indicadores de agendamento e comparecimento.</div>
+      <div class="filters">
+        <select id="db-f-product"></select>
+        <select id="db-f-sdr"></select>
+        <select id="db-f-period">
+          <option value="all">Todo o período</option>
+          <option value="month">Este mês</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+        </select>
+      </div>
+      <div class="grid4" style="margin-bottom:1rem">
+        <div class="kpi"><div class="lbl">Total de visitas agendadas</div><div class="val" id="k-total">0</div><div class="sub">todas as visitas marcadas</div></div>
+        <div class="kpi"><div class="lbl">Visitas comparecidas</div><div class="val" id="k-show">0</div><div class="sub" id="k-show-sub"></div></div>
+        <div class="kpi"><div class="lbl">Taxa de show up</div><div class="val" id="k-rate">—</div><div class="sub" id="k-rate-sub"></div></div>
+        <div class="kpi"><div class="lbl">Agendadas presenciais</div><div class="val" id="k-pres">0</div><div class="sub" id="k-pres-sub"></div></div>
+      </div>
+      <div class="grid4" style="margin-bottom:1rem">
+        <div class="kpi"><div class="lbl">Aguardando feedback</div><div class="val" id="k-feedback">0</div><div class="sub">visitas passadas sem confirmação</div></div>
+        <div class="kpi"><div class="lbl">Total de vendas</div><div class="val" id="k-sales">0</div><div class="sub" id="k-sales-sub"></div></div>
+        <div class="kpi hero"><div class="lbl">VGV vendido</div><div class="val money" id="k-vgv">R$ 0</div><div class="sub" id="k-vgv-sub"></div></div>
+        <div class="kpi"><div class="lbl">Taxa de conversão</div><div class="val" id="k-conv">—</div><div class="sub" id="k-conv-sub"></div></div>
+      </div>
+      <div class="grid3" style="margin-bottom:1rem">
+        <div class="kpi"><div class="lbl">Em negociação agora</div><div class="val" id="k-neg-now">0</div><div class="sub">leads na mesa sem resultado</div></div>
+        <div class="kpi"><div class="lbl">Foram para a mesa</div><div class="val" id="k-neg">0</div><div class="sub" id="k-neg-sub"></div></div>
+        <div class="kpi"><div class="lbl">Conversão da mesa</div><div class="val" id="k-neg-conv">—</div><div class="sub" id="k-neg-conv-sub"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Agendadas × comparecidas por semana</div>
+          <div class="legend"><span><i style="background:var(--series-1)"></i>Agendadas</span><span><i style="background:var(--series-2)"></i>Comparecidas</span></div>
+        </div>
+        <div class="chart-wrap"><canvas id="db-chart" role="img" aria-label="Visitas agendadas e comparecidas por semana"></canvas></div>
+      </div>
+      <div class="card"><div class="card-title" style="margin-bottom:.75rem">Por produto</div><div class="table-wrap" id="db-by-product"></div></div>
+      <div class="card" id="db-by-sdr-card"><div class="card-title" style="margin-bottom:.75rem">Por SDR responsável</div><div class="table-wrap" id="db-by-sdr"></div></div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem">Próximas visitas presenciais</div>
+        <div class="table-wrap" id="db-pres-list"></div>
+      </div>
+    </section>
+
+    <!-- ── Admin ── -->
+    <section class="page" id="page-admin">
+      <div class="page-title">Administração</div>
+      <div class="page-sub">Cadastre produtos, a equipe de SDRs e os acessos dos clientes.</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Produtos</div><button class="btn-secondary" id="add-product-btn">+ Novo produto</button></div>
+          <div class="table-wrap" id="admin-products"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Equipe</div><button class="btn-secondary" id="add-user-btn">+ Novo acesso</button></div>
+          <div class="table-wrap" id="admin-users"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Clientes (Portal do Incorporador)</div><div class="muted">O cliente vê só os empreendimentos liberados, sem saber qual SDR agendou.</div></div>
+          <button class="btn-secondary" id="add-client-btn">+ Novo acesso de cliente</button>
+        </div>
+        <div class="table-wrap" id="admin-clients"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Integração GoHighLevel</div><div class="muted">Cada empreendimento envia as visitas para a <b>sua subconta</b>: contato + agendamento no calendário de visitas + oportunidade em “Visita agendada”.</div></div>
+        </div>
+        <div class="table-wrap" id="ghl-list"></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ══════════════════════ PORTAL DO CLIENTE ══════════════════════ -->
+<div id="portal-view" hidden>
+  <header class="pt-top">
+    <div class="pt-in">
+      <div class="pt-row">
+        <div class="logo"><svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 3.2A13 13 0 1 0 28.8 22 10.5 10.5 0 1 1 20.5 3.2Z" fill="#d4af35"/><rect x="13" y="15" width="2.6" height="9" rx=".6" fill="#d4af35" opacity=".85"/><rect x="16.8" y="11.5" width="2.6" height="12.5" rx=".6" fill="#d4af35"/><rect x="20.6" y="17" width="2.6" height="7" rx=".6" fill="#d4af35" opacity=".7"/></svg><span class="brand">Digital Moon</span><span class="sep"></span><span class="product">Portal do Incorporador</span></div>
+        <div class="pt-who"><div class="avatar" id="pt-avatar">?</div><span class="nm"><b id="pt-name"></b> · <span id="pt-company"></span></span><button class="btn-sm" id="pt-logout" style="color:var(--night-ink);border-color:rgba(255,255,255,.18)">Sair</button></div>
+      </div>
+      <div class="pt-head">
+        <div><div class="pt-eyebrow">Seu empreendimento</div><h1 id="pt-prod">—</h1><div class="loc" id="pt-loc"></div></div>
+        <div class="field" style="margin:0" id="pt-select-wrap" hidden><label for="pt-select" style="color:var(--night-ink-2)">Empreendimento</label><select id="pt-select"></select></div>
+      </div>
+      <nav class="pt-tabs" id="pt-tabs">
+        <button class="pt-tab on" data-tab="geral">Visão geral</button>
+        <button class="pt-tab" data-tab="agenda">Agenda</button>
+        <button class="pt-tab" data-tab="feedback">Visitas agendadas <span class="badge" id="pt-fb-count">0</span></button>
+        <button class="pt-tab" data-tab="realizadas">Visitas realizadas</button>
+        <button class="pt-tab" data-tab="negociacao">Negociação <span class="badge" id="pt-neg-count">0</span></button>
+        <button class="pt-tab" data-tab="vendas">Vendas <span class="badge" id="pt-sales-count">0</span></button>
+      </nav>
+    </div>
+  </header>
+  <main class="pt-wrap">
+    <div id="pt-empty" class="card empty" hidden>Nenhum empreendimento liberado para o seu acesso ainda. Fale com a Digital Moon.</div>
+    <div class="pt-toolbar" id="pt-toolbar">
+      <div class="pt-seg" id="pt-period"><button class="on" data-p="all">Todo o período</button><button data-p="7">7 dias</button><button data-p="30">30 dias</button><button data-p="90">90 dias</button></div>
+      <span id="pt-period-note"></span>
+    </div>
+    <div id="pt-geral">
+      <div class="pt-kpis">
+        <div class="kpi"><div class="lbl">Visitas agendadas</div><div class="val" id="pk-ag">0</div><div class="sub" id="pk-ag-s"></div></div>
+        <div class="kpi"><div class="lbl">Compareceram</div><div class="val" id="pk-co">0</div><div class="sub" id="pk-co-s"></div></div>
+        <div class="kpi"><div class="lbl">Taxa de show up</div><div class="val" id="pk-sh">—</div><div class="sub">das visitas já concluídas</div></div>
+        <div class="kpi"><div class="lbl">Foram para a mesa</div><div class="val" id="pk-neg">0</div><div class="sub" id="pk-neg-s"></div></div>
+        <div class="kpi"><div class="lbl">Vendas</div><div class="val" id="pk-ve">0</div><div class="sub" id="pk-ve-s"></div></div>
+        <div class="kpi hero"><div class="lbl">VGV gerado</div><div class="val money" id="pk-vgv">R$ 0</div><div class="sub" id="pk-vgv-s"></div></div>
+      </div>
+      <div class="pt-two">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Agendadas × compareceram por semana</div>
+            <div class="legend"><span><i style="background:var(--series-1)"></i>Agendadas</span><span><i style="background:var(--series-2)"></i>Compareceram</span></div></div>
+          <div class="chart-wrap" style="height:230px"><canvas id="pt-chart" role="img" aria-label="Visitas agendadas e comparecidas por semana"></canvas></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Funil do período</div><span class="muted">visita → venda</span></div><div class="funnel" id="pt-funnel"></div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Próximas visitas</div><span class="muted" id="pt-next-note"></span></div><div id="pt-next"></div></div>
+    </div>
+    <div id="pt-agenda" hidden>
+      <div class="card">
+        <div class="card-header"><div class="cal-head"><button class="btn-sm" id="pt-prev" aria-label="Mês anterior">‹</button><div class="month" id="pt-month"></div><button class="btn-sm" id="pt-next-m" aria-label="Próximo mês">›</button></div></div>
+        <div class="cal-grid" id="pt-cal"></div>
+      </div>
+    </div>
+    <div id="pt-feedback" hidden>
+      <div class="card"><div class="card-header"><div><div class="card-title">Aguardando o seu feedback</div><div class="muted">A visita já aconteceu? Conte se vendeu, se não comprou ou devolva para a Digital Moon reagendar.</div></div></div><div id="pt-fb-wait"></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">Próximas visitas</div><span class="muted">também aceitam feedback, se a visita acontecer antes</span></div><div id="pt-fb-next"></div></div>
+      <div class="card" id="pt-fb-back-card"><div class="card-header"><div class="card-title">Devolvidas para reagendamento</div><span class="muted">a equipe Digital Moon vai remarcar</span></div><div id="pt-fb-back"></div></div>
+    </div>
+    <div id="pt-negociacao" hidden>
+      <div class="card"><div class="card-header"><div><div class="card-title">Em negociação</div><div class="muted">Leads na mesa: proposta e contraproposta. Feche como vendeu, não comprou ou devolva para reagendar.</div></div></div><div id="pt-neg"></div></div>
+    </div>
+    <div id="pt-vendas" hidden>
+      <div class="card"><div class="card-header"><div class="card-title">Vendas fechadas</div><span class="muted" id="pt-sales-total"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>Data da visita</th><th>Cliente</th><th>VGV</th><th>Observação da venda</th></tr></thead><tbody id="pt-sales"></tbody></table></div>
+      </div>
+    </div>
+    <div id="pt-realizadas" hidden>
+      <div class="card"><div class="card-header"><div class="card-title">Visitas concluídas</div><span class="muted">o que aconteceu em cada visita</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Modalidade</th><th>Compareceu</th><th>Resultado</th><th>Observação</th></tr></thead><tbody id="pt-done"></tbody></table></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// Configuração
+// ══════════════════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://dtkoiiuhsjaxaalulkwz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_eKvfymRI42aXvq3i-Hn4Vg_7M6MiiGZ';
+// ?demo na URL roda tudo em localStorage, sem backend (útil para treinar a equipe).
+const DEMO = new URLSearchParams(location.search).has('demo');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Camada de dados — Supabase
+// ══════════════════════════════════════════════════════════════════════════════
+function supabaseApi() {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const must = ({ data, error }) => { if (error) throw error; return data; };
+  return {
+    async session() { const { data } = await sb.auth.getSession(); return data.session; },
+    onAuth(cb) { sb.auth.onAuthStateChange((e, s) => cb(s, e)); },
+    async updatePassword(password) { must(await sb.auth.updateUser({ password })); },
+    async signIn(email, password) { must(await sb.auth.signInWithPassword({ email, password })); },
+    async signOut() { await sb.auth.signOut(); },
+    async resetPassword(email) { must(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] })); },
+    async profile(id) { return must(await sb.from('profiles').select('*').eq('id', id).single()); },
+    async profiles() { return must(await sb.from('profiles').select('*').order('full_name')); },
+    async products() { return must(await sb.from('products').select('*').order('name')); },
+    async visits() { return must(await sb.from('visits').select('*').order('scheduled_at')); },
+    async createVisit(v) { return must(await sb.from('visits').insert(v).select().single()); },
+    async updateVisit(id, patch) { return must(await sb.from('visits').update(patch).eq('id', id).select().single()); },
+    async deleteVisit(id) { must(await sb.from('visits').delete().eq('id', id)); },
+    async saveProduct(p) {
+      if (p.id) return must(await sb.from('products').update(p).eq('id', p.id).select().single());
+      return must(await sb.from('products').insert(p).select().single());
+    },
+    // Exclui o produto; com withVisits, apaga antes as visitas vinculadas a ele.
+    async deleteProduct(id, withVisits) {
+      if (withVisits) must(await sb.from('visits').delete().eq('product_id', id));
+      must(await sb.from('products').delete().eq('id', id));
+    },
+    async updateProfile(id, patch) { return must(await sb.from('profiles').update(patch).eq('id', id).select().single()); },
+    async clientProducts() { return must(await sb.from('client_products').select('*')); },
+    async setClientProducts(clientId, productIds) {
+      must(await sb.from('client_products').delete().eq('client_id', clientId));
+      if (productIds.length) must(await sb.from('client_products').insert(productIds.map(product_id => ({ client_id: clientId, product_id }))));
+    },
+    // Visitas do cliente: função do banco que já devolve os dados sem SDR.
+    async clientVisits() { return must(await sb.rpc('client_visits')); },
+    // Feedback do incorporador: vendeu / nao_vendeu / reagendar (validado no banco).
+    async clientFeedback(visitId, outcome, vgv, note) {
+      must(await sb.rpc('client_feedback', { p_visit: visitId, p_outcome: outcome, p_vgv: vgv ?? null, p_note: note ?? null }));
+    },
+    // Integração GoHighLevel: Edge Function `ghl-sync` (o token do GHL fica só no servidor).
+    async ghlSync(visitId, action = 'sync') {
+      const { data, error } = await sb.functions.invoke('ghl-sync', { body: { action, visit_id: visitId } });
+      if (error) {
+        let msg = data && data.error;
+        try { msg = msg || (await error.context?.json())?.error; } catch {}
+        throw new Error(msg || 'Não foi possível falar com o GoHighLevel. Confira se a função ghl-sync está publicada.');
+      }
+      return data;
+    },
+    async ghlStatus() { return must(await sb.rpc('ghl_connection_status')); },
+    async ghlSetConnection(c) {
+      must(await sb.rpc('set_ghl_connection', { p_product: c.product_id, p_location: c.location_id, p_token: c.token || null,
+        p_calendar: c.calendar_id || null, p_pipeline: c.pipeline_id || null, p_stage: c.stage_id || null }));
+    },
+    async ghlRemove(productId) { must(await sb.rpc('remove_ghl_connection', { p_product: productId })); },
+    async ghlDiscover(productId) {
+      const { data, error } = await sb.functions.invoke('ghl-sync', { body: { action: 'discover', product_id: productId } });
+      if (error) {
+        let msg = data && data.error;
+        try { msg = msg || (await error.context?.json())?.error; } catch {}
+        throw new Error(msg || 'A função ghl-sync não respondeu. Confira se ela está publicada no Supabase.');
+      }
+      return data;
+    },
+    // Exclusão de login: Edge Function `delete-user` (transfere as visitas e apaga o acesso).
+    async deleteUser(userId, transferTo) {
+      const { data, error } = await sb.functions.invoke('delete-user', { body: { user_id: userId, transfer_to: transferTo || null } });
+      if (error) {
+        let msg = data && data.error;
+        try { msg = msg || (await error.context?.json())?.error; } catch {}
+        throw new Error(msg || 'Não foi possível apagar. Confira se a função delete-user está publicada no Supabase.');
+      }
+      if (data && data.error) throw new Error(data.error);
+    },
+    // Criação de login: Edge Function `create-sdr` (usa a service role no servidor).
+    async createUser(u) {
+      const { data, error } = await sb.functions.invoke('create-sdr', { body: u });
+      if (error) throw new Error((data && data.error) || error.message);
+      if (data && data.error) throw new Error(data.error);
+      return data;
+    },
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Camada de dados — Demonstração (localStorage)
+// ══════════════════════════════════════════════════════════════════════════════
+function demoApi() {
+  const KEY = 'moon-visitas-demo-v5';
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };
+  const save = db => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+  let db = load();
+  if (!db) {
+    const users = [
+      { id: 'u-admin', full_name: 'Gestor Moon', role: 'admin', active: true, email: 'gestor@digitalmoon.com' },
+      { id: 'u-ana', full_name: 'Ana Souza', role: 'sdr', active: true, email: 'ana@digitalmoon.com' },
+      { id: 'u-bruno', full_name: 'Bruno Lima', role: 'sdr', active: true, email: 'bruno@digitalmoon.com' },
+      { id: 'u-carlos', full_name: 'Carlos Andrade', role: 'cliente', company: 'Greenview Incorporadora', active: true, email: 'carlos@greenview.com.br' },
+    ];
+    const products = [
+      { id: 'p1', name: 'Residencial Lua Nova', location: 'Zona Sul', color: '#378ADD', active: true },
+      { id: 'p2', name: 'Moon Tower', location: 'Centro', color: '#1D9E75', active: true },
+      { id: 'p3', name: 'Villa Crescente', location: 'Zona Oeste', color: '#BA7517', active: true },
+    ];
+    const names = ['Carla Mendes','Diego Rocha','Elaine Prado','Fábio Nunes','Gabriela Reis','Henrique Alves','Isabela Costa','João Pedro','Karina Dias','Lucas Martins','Mariana Lopes','Nicolas Faria','Olívia Ramos','Paulo Teixeira','Renata Gomes','Sérgio Pinto'];
+    const visits = [];
+    const now = new Date();
+    names.forEach((n, i) => {
+      const d = new Date(now); d.setDate(d.getDate() + (i - 11) * 2); d.setHours(9 + (i % 8), i % 2 ? 30 : 0, 0, 0);
+      const past = d < now;
+      const status = !past ? 'agendada' : (i % 4 === 0 ? 'nao_compareceu' : (i === 10 ? 'agendada' : 'realizada'));
+      visits.push({
+        id: uid(), product_id: products[i % 3].id, client_name: n, title: 'Visita ' + products[i % 3].name,
+        scheduled_at: d.toISOString(), modality: i % 3 === 1 ? 'online' : 'presencial',
+        notes: i % 2 ? 'Cliente interessado em unidade de 2 dormitórios.' : '',
+        sdr_id: i % 2 ? 'u-ana' : 'u-bruno', status,
+        completion_notes: status === 'realizada' ? 'Visitou o decorado, pediu simulação de financiamento.' : null,
+        completed_at: status !== 'agendada' ? d.toISOString() : null, created_by: 'u-admin', created_at: now.toISOString(),
+        sale_status: status === 'realizada' ? (i % 3 === 0 ? 'vendeu' : i % 3 === 1 ? 'nao_vendeu' : null) : null,
+        vgv: status === 'realizada' && i % 3 === 0 ? 450000 + i * 25000 : null,
+        sale_notes: status === 'realizada' && i % 3 === 1 ? 'Achou o valor da entrada alto.' : null,
+      });
+    });
+    db = { users, products, visits, clientProducts: [{ client_id: 'u-carlos', product_id: 'p1' }], session: null };
+    save(db);
+  }
+  let authCb = () => {};
+  const clone = x => JSON.parse(JSON.stringify(x));
+  return {
+    async session() { return db.session; },
+    onAuth(cb) { authCb = cb; },
+    async signIn(email) {
+      let u = db.users.find(x => x.email === email.toLowerCase());
+      if (!u) { u = { id: uid(), full_name: email.split('@')[0], role: 'admin', active: true, email: email.toLowerCase() }; db.users.push(u); }
+      db.session = { user: { id: u.id, email: u.email } }; save(db); authCb(db.session);
+    },
+    async signOut() { db.session = null; save(db); authCb(null); },
+    async resetPassword() {},
+    async profile(id) { return clone(db.users.find(u => u.id === id)); },
+    async profiles() {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      const list = me?.role === 'admin' ? db.users : db.users.filter(u => u.id === me?.id);
+      return clone(list).sort((a, b) => a.full_name.localeCompare(b.full_name));
+    },
+    async products() {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      const allowed = db.clientProducts.filter(c => c.client_id === me?.id).map(c => c.product_id);
+      const list = me?.role === 'cliente' ? db.products.filter(p => allowed.includes(p.id)) : db.products;
+      return clone(list).sort((a, b) => a.name.localeCompare(b.name));
+    },
+    async clientProducts() {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      return clone(me?.role === 'admin' ? db.clientProducts : db.clientProducts.filter(c => c.client_id === me?.id));
+    },
+    async setClientProducts(clientId, ids) {
+      db.clientProducts = db.clientProducts.filter(c => c.client_id !== clientId).concat(ids.map(product_id => ({ client_id: clientId, product_id })));
+      save(db);
+    },
+    async clientVisits() {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      if (me?.role !== 'cliente' || me.active === false) return [];
+      const allowed = db.clientProducts.filter(c => c.client_id === me.id).map(c => c.product_id);
+      return db.visits.filter(v => allowed.includes(v.product_id))
+        .map(({ id, product_id, client_name, scheduled_at, modality, status, notes, completion_notes, sale_status, vgv, sale_notes, reschedule_requested, reschedule_note, feedback_source, negotiation_at, negotiation_notes, negotiated }) =>
+          ({ id, product_id, client_name, scheduled_at, modality, status, notes, completion_notes, sale_status, vgv, sale_notes, reschedule_requested: !!reschedule_requested, reschedule_note: reschedule_note ?? null, feedback_source: feedback_source ?? null,
+             negotiation_at: negotiation_at ?? null, negotiation_notes: negotiation_notes ?? null, negotiated: !!negotiated }))
+        .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    },
+    // Mesmas regras da função client_feedback() do banco.
+    async clientFeedback(visitId, outcome, vgv, note) {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      if (me?.role !== 'cliente' || me.active === false) throw new Error('Acesso negado.');
+      const allowed = db.clientProducts.filter(c => c.client_id === me.id).map(c => c.product_id);
+      const v = db.visits.find(x => x.id === visitId && allowed.includes(x.product_id));
+      if (!v) throw new Error('Visita não encontrada.');
+      const note2 = (note || '').trim() || null;
+      if (outcome === 'vendeu' || outcome === 'nao_vendeu') {
+        if (v.status === 'nao_compareceu' || (v.status === 'realizada' && v.sale_status)) throw new Error('Esta visita já tem resultado registrado.');
+        if (outcome === 'vendeu' && !(vgv > 0)) throw new Error('Informe o VGV da venda.');
+        if (outcome === 'nao_vendeu' && !note2) throw new Error('Informe por que o cliente não comprou.');
+        Object.assign(v, { status: 'realizada', completed_at: v.completed_at || new Date().toISOString(),
+          completion_notes: v.completion_notes || 'Comparecimento confirmado pelo incorporador.',
+          sale_status: outcome, vgv: outcome === 'vendeu' ? Math.round(vgv * 100) / 100 : null, sale_notes: note2,
+          sale_at: new Date().toISOString(), feedback_source: 'cliente', reschedule_requested: false });
+      } else if (outcome === 'negociacao') {
+        if (v.status === 'nao_compareceu' || v.sale_status || inNegotiation(v)) throw new Error('Esta visita não pode ir para negociação.');
+        Object.assign(v, { status: 'realizada', completed_at: v.completed_at || new Date().toISOString(),
+          completion_notes: v.completion_notes || 'Comparecimento confirmado pelo incorporador.',
+          negotiation_at: new Date().toISOString(), negotiation_notes: note2, negotiated: true, feedback_source: 'cliente', reschedule_requested: false });
+      } else if (outcome === 'reagendar') {
+        if (!(['agendada', 'aguardando_feedback'].includes(v.status) || inNegotiation(v))) throw new Error('Só visitas em aberto ou em negociação podem voltar para reagendamento.');
+        Object.assign(v, { status: 'aguardando_feedback', negotiation_at: null, reschedule_requested: true, reschedule_note: note2, feedback_source: 'cliente' });
+      } else throw new Error('Opção de feedback inválida.');
+      save(db);
+    },
+    async visits() {
+      const me = db.users.find(u => u.id === db.session?.user.id);
+      const list = me?.role === 'admin' ? db.visits : db.visits.filter(v => v.sdr_id === me?.id);
+      return clone(list).sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    },
+    async createVisit(v) { const r = { ...v, id: uid(), status: 'agendada', created_by: db.session.user.id, created_at: new Date().toISOString() }; db.visits.push(r); save(db); return clone(r); },
+    async updateVisit(id, patch) { const v = db.visits.find(x => x.id === id); Object.assign(v, patch); save(db); return clone(v); },
+    async deleteVisit(id) { db.visits = db.visits.filter(x => x.id !== id); save(db); },
+    async saveProduct(p) {
+      if (p.id) { const x = db.products.find(y => y.id === p.id); Object.assign(x, p); save(db); return clone(x); }
+      const r = { ...p, id: uid() }; db.products.push(r); save(db); return clone(r);
+    },
+    async deleteProduct(id, withVisits) {
+      if (!withVisits && db.visits.some(v => v.product_id === id)) throw new Error('Produto possui visitas vinculadas.');
+      db.visits = db.visits.filter(v => v.product_id !== id); db.products = db.products.filter(p => p.id !== id); save(db);
+    },
+    async updateProfile(id, patch) { const u = db.users.find(x => x.id === id); Object.assign(u, patch); save(db); return clone(u); },
+    async ghlSync() { return { skipped: 'demo' }; },
+    async ghlStatus() { return clone((db.ghl || []).map(({ token, ...c }) => ({ ...c, has_token: !!token }))); },
+    async ghlSetConnection(c) {
+      db.ghl = db.ghl || [];
+      const cur = db.ghl.find(x => x.product_id === c.product_id);
+      if (!cur && !c.token) throw new Error('Informe o token da subconta.');
+      const next = { ...cur, ...c, token: c.token || cur?.token };
+      db.ghl = db.ghl.filter(x => x.product_id !== c.product_id).concat(next); save(db);
+    },
+    async ghlRemove(productId) { db.ghl = (db.ghl || []).filter(x => x.product_id !== productId); save(db); },
+    // Demonstração: devolve calendários e pipelines de exemplo.
+    async ghlDiscover(productId) {
+      const c = (db.ghl || []).find(x => x.product_id === productId);
+      if (!c) return { ok: false, error: 'Este empreendimento ainda não tem subconta do GHL configurada.' };
+      return { ok: true, configured: { calendar: c.calendar_id, pipeline: c.pipeline_id, stage: c.stage_id },
+        calendars: [{ id: 'cal-demo-1', name: 'Agendamento de Visita' }, { id: 'cal-demo-2', name: 'Reuniões internas' }],
+        pipelines: [{ id: 'pip-demo', name: 'Vendas', stages: [{ id: 'st-1', name: 'Lead novo' }, { id: 'st-2', name: 'Visita agendada' }, { id: 'st-3', name: 'Negociação' }] }] };
+    },
+    async deleteUser(userId, transferTo) {
+      if (userId === db.session?.user.id) throw new Error('Você não pode apagar o seu próprio acesso.');
+      const linked = db.visits.filter(v => v.sdr_id === userId || v.created_by === userId);
+      if (linked.length && !transferTo) throw new Error('Este usuário tem visitas. Escolha para quem transferi-las.');
+      db.visits.forEach(v => { if (v.sdr_id === userId) v.sdr_id = transferTo; if (v.created_by === userId) v.created_by = transferTo; });
+      db.users = db.users.filter(u => u.id !== userId);
+      db.clientProducts = db.clientProducts.filter(c => c.client_id !== userId);
+      save(db);
+    },
+    async createUser(u) {
+      if (db.users.some(x => x.email === u.email.toLowerCase())) throw new Error('E-mail já cadastrado.');
+      const r = { id: uid(), full_name: u.full_name, role: u.role, company: u.company || null, active: true, email: u.email.toLowerCase() };
+      db.users.push(r); save(db); return clone(r);
+    },
+  };
+}
+
+const api = DEMO ? demoApi() : supabaseApi();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Estado e helpers
+// ══════════════════════════════════════════════════════════════════════════════
+const state = {
+  me: null, products: [], profiles: [], visits: [],
+  tab: 'produtos', calProduct: null, calMonth: startOfMonth(new Date()),
+  agSub: 'proximas', reSub: 'compareceu',
+};
+let chart = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+const fmtDate = iso => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const fmtDateTime = iso => { const d = new Date(iso); return `${d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })} · ${hm(d)}`; };
+const productById = id => state.products.find(p => p.id === id);
+const profileById = id => state.profiles.find(p => p.id === id);
+const productName = id => productById(id)?.name ?? '—';
+const sdrName = id => profileById(id)?.full_name ?? '—';
+const isAdmin = () => state.me?.role === 'admin';
+const isClient = () => state.me?.role === 'cliente';
+// Equipe interna (gestores e SDRs); clientes ficam fora de filtros e atribuições.
+const team = () => state.profiles.filter(p => p.role !== 'cliente');
+const brl = n => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const brl2 = n => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Aceita "1.250.000", "1250000,50", "R$ 850.000,00", "850000.5".
+function parseBRL(str) {
+  let t = String(str || '').replace(/[^\d,.-]/g, '');
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  else if ((t.match(/\./g) || []).length > 1 || /\.\d{3}$/.test(t)) t = t.replace(/\./g, '');
+  const n = Number(t);
+  return Number.isFinite(n) ? n : NaN;
+}
+// Visita agendada cuja data já passou e ainda não recebeu baixa.
+// Em negociação: compareceu, foi para a mesa e ainda não tem resultado de venda.
+const inNegotiation = v => v.status === 'realizada' && !v.sale_status && !!v.negotiation_at;
+// Visita em aberto: agendada ou movida manualmente para "aguardando feedback".
+const isOpen = v => v.status === 'agendada' || v.status === 'aguardando_feedback';
+// Aguardando feedback: movida manualmente, ou agendada cuja data já passou sem baixa.
+const isAwaitingFeedback = (v, now = new Date()) =>
+  v.status === 'aguardando_feedback' || (v.status === 'agendada' && new Date(v.scheduled_at) < now);
+const initials = n => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('');
+
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(x => x.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function errMsg(e) {
+  const m = e?.message || String(e);
+  if (/Invalid login credentials/i.test(m)) return 'E-mail ou senha incorretos.';
+  if (/Email not confirmed/i.test(m)) return 'Confirme seu e-mail antes de entrar.';
+  if (/visits_status_check/i.test(m)) return 'O banco ainda não aceita "aguardando feedback". Rode o SQL 20260929030000_aguardando_feedback.sql no Supabase.';
+  if (/ghl_connection|set_ghl_connection|ghl_connections/i.test(m)) return 'O banco ainda não tem as conexões por empreendimento. Rode o SQL 20261002010000_ghl_por_empreendimento.sql no Supabase.';
+  if (/lead_phone|lead_email|ghl_sync|ghl_contact_id|ghl_appointment_id/i.test(m)) return 'O banco ainda não tem os campos da integração. Rode o SQL 20261002000000_integracao_ghl.sql no Supabase.';
+  if (/negotiation_at|negotiated|negotiation_notes/i.test(m)) return 'O banco ainda não tem a etapa de Negociação. Rode o SQL 20261001000000_negociacao.sql no Supabase.';
+  if (/client_feedback|reschedule_requested|feedback_source/i.test(m)) return 'O banco ainda não tem o feedback do incorporador. Rode o SQL 20260930020000_feedback_incorporador.sql no Supabase.';
+  if (/client_visits|client_products|profiles_role_check/i.test(m)) return 'O banco ainda não tem o Portal do Cliente. Rode o SQL 20260930010000_portal_cliente.sql no Supabase.';
+  if (/schema cache/i.test(m)) return 'O banco está desatualizado. Rode os SQLs novos da pasta supabase/migrations no Supabase.';
+  return m;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Autenticação
+// ══════════════════════════════════════════════════════════════════════════════
+async function boot() {
+  if (DEMO) $('demo-note').hidden = false;
+  api.onAuth((s, event) => {
+    if (!s) showLogin();
+    // Chegou pelo link de "Esqueci minha senha": pede a nova senha.
+    if (event === 'PASSWORD_RECOVERY') setTimeout(openNewPasswordModal, 0);
+  });
+  const s = await api.session();
+  if (s) await enterApp(s); else showLogin();
+}
+
+function showLogin() {
+  state.me = null;
+  $('app-view').hidden = true;
+  $('portal-view').hidden = true;
+  $('login-view').hidden = false;
+}
+
+async function enterApp(session) {
+  try {
+    state.me = await api.profile(session.user.id);
+  } catch (e) {
+    state.me = null;
+  }
+  if (!state.me || state.me.active === false) {
+    await api.signOut();
+    showLogin();
+    showLoginError(state.me ? 'Seu acesso está desativado. Fale com o gestor.' : 'Perfil não encontrado. Fale com o gestor.');
+    return;
+  }
+  $('login-view').hidden = true;
+  if (isClient()) return enterPortal();
+  $('portal-view').hidden = true;
+  $('app-view').hidden = false;
+  $('user-name').textContent = state.me.full_name;
+  $('user-avatar').textContent = initials(state.me.full_name);
+  $('nav-admin').hidden = !isAdmin();
+  state.calProduct = null;
+  switchTab('produtos');
+  await refresh();
+}
+
+function showLoginError(msg) {
+  $('login-info').hidden = true;
+  $('login-error').textContent = msg; $('login-error').hidden = false;
+}
+
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('login-btn'); btn.disabled = true; btn.textContent = 'Entrando…';
+  $('login-error').hidden = true;
+  try {
+    await api.signIn($('login-email').value.trim(), $('login-pass').value);
+    await enterApp(await api.session());
+  } catch (err) {
+    showLoginError(errMsg(err));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+});
+
+$('forgot-btn').addEventListener('click', async () => {
+  const email = $('login-email').value.trim();
+  if (!email) return showLoginError('Digite seu e-mail acima para receber o link de redefinição.');
+  try {
+    await api.resetPassword(email);
+    $('login-error').hidden = true;
+    $('login-info').textContent = 'Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.';
+    $('login-info').hidden = false;
+  } catch (err) { showLoginError(errMsg(err)); }
+});
+
+function openNewPasswordModal() {
+  modal(`
+    <h2>Definir nova senha</h2><div class="sub">Escolha a senha que você usará para entrar.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nova senha</label><input name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+    <div class="modal-actions"><button class="btn-primary" type="submit">Salvar senha</button></div>`,
+  async fd => {
+    await api.updatePassword(fd.get('password'));
+    toast('Senha atualizada.');
+    await enterApp(await api.session());
+  });
+}
+
+$('logout-btn').addEventListener('click', async () => { await api.signOut(); showLogin(); });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Navegação
+// ══════════════════════════════════════════════════════════════════════════════
+$('nav').addEventListener('click', e => {
+  const b = e.target.closest('.nav-btn'); if (!b) return;
+  if (b.dataset.tab === 'produtos') state.calProduct = null;
+  switchTab(b.dataset.tab);
+});
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tab));
+  render();
+}
+
+async function refresh() {
+  try {
+    [state.products, state.profiles, state.visits] = await Promise.all([api.products(), api.profiles(), api.visits()]);
+  } catch (e) {
+    toast('Erro ao carregar dados: ' + errMsg(e));
+  }
+  fillFilters();
+  render();
+}
+
+function render() {
+  $('badge-agendadas').textContent = state.visits.filter(isOpen).length;
+  $('badge-agendadas').title = `${state.visits.filter(v => isAwaitingFeedback(v)).length} aguardando feedback`;
+  $('badge-neg').textContent = state.visits.filter(inNegotiation).length;
+  ({ produtos: renderProducts, agendadas: renderAgendadas, realizadas: renderRealizadas, negociacao: renderNegociacao, dashboard: renderDashboard, admin: renderAdmin })[state.tab]?.();
+}
+
+// ── Filtros compartilhados ────────────────────────────────────────────────────
+function fillFilters() {
+  const prodOpts = '<option value="">Todos os produtos</option>' + state.products.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  const sdrOpts = '<option value="">Todos os SDRs</option>' + team().map(p => `<option value="${esc(p.id)}">${esc(p.full_name)}</option>`).join('');
+  ['ag', 're', 'ng', 'db'].forEach(k => {
+    const ps = $(`${k}-f-product`), ss = $(`${k}-f-sdr`);
+    const pv = ps.value, sv = ss.value;
+    ps.innerHTML = prodOpts; ss.innerHTML = sdrOpts;
+    ps.value = pv; ss.value = isAdmin() ? sv : '';
+    // SDR só enxerga as próprias visitas: o filtro por SDR não faz sentido para ele.
+    ss.hidden = !isAdmin();
+  });
+  $('db-by-sdr-card').hidden = !isAdmin();
+  $('db-sub').textContent = isAdmin()
+    ? 'Indicadores de agendamento e comparecimento de toda a equipe.'
+    : 'Seus indicadores de agendamento, comparecimento e vendas.';
+}
+['ag-f-product', 'ag-f-sdr', 're-f-product', 're-f-sdr', 'ng-f-product', 'ng-f-sdr', 'db-f-product', 'db-f-sdr', 'db-f-period']
+  .forEach(id => $(id).addEventListener('change', render));
+function bindSubtabs(id, key) {
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('.subtab'); if (!b) return;
+    state[key] = b.dataset.sub;
+    $(id).querySelectorAll('.subtab').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  });
+}
+bindSubtabs('ag-subtabs', 'agSub');
+bindSubtabs('re-subtabs', 'reSub');
+
+function filtered(prefix) {
+  const p = $(`${prefix}-f-product`).value, s = $(`${prefix}-f-sdr`).value;
+  return state.visits.filter(v => (!p || v.product_id === p) && (!s || v.sdr_id === s));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Aba Produtos + calendário
+// ══════════════════════════════════════════════════════════════════════════════
+function renderProducts() {
+  if (state.calProduct) return renderCalendar();
+  $('products-list').hidden = false; $('product-calendar').hidden = true;
+  $('new-product-btn').hidden = !isAdmin();
+  const active = state.products.filter(p => p.active !== false);
+  if (!active.length) {
+    $('products-grid').innerHTML = `<div class="empty">Nenhum produto cadastrado.${isAdmin() ? ' Clique em “+ Novo produto” para criar o primeiro.' : ' Peça ao gestor para cadastrar.'}</div>`;
+    return;
+  }
+  $('products-grid').innerHTML = active.map(p => {
+    const pending = state.visits.filter(v => v.product_id === p.id && isOpen(v)).length;
+    return `<div class="product-card" role="button" tabindex="0" data-id="${esc(p.id)}" aria-label="Abrir agenda de ${esc(p.name)}">
+      <span class="stripe" style="background:${esc(p.color || '#378ADD')}"></span>
+      <h3>${esc(p.name)}</h3>
+      <div class="loc">${esc(p.location || '')}</div>
+      <div class="p-foot">
+        <div class="meta">${pending} visita${pending === 1 ? '' : 's'} agendada${pending === 1 ? '' : 's'}</div>
+        ${isAdmin() ? `<div class="p-actions">
+          <button class="btn-sm" data-pact="edit" title="Editar produto">Editar</button>
+          <button class="btn-sm btn-no" data-pact="delete" title="Excluir produto">Excluir</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function openProductCalendar(id) {
+  state.calProduct = id; state.calMonth = startOfMonth(new Date());
+  renderCalendar();
+}
+$('products-grid').addEventListener('click', e => {
+  const c = e.target.closest('.product-card'); if (!c) return;
+  const act = e.target.closest('[data-pact]');
+  if (act?.dataset.pact === 'edit') return openProductModal(productById(c.dataset.id));
+  if (act?.dataset.pact === 'delete') return openDeleteProductModal(productById(c.dataset.id));
+  openProductCalendar(c.dataset.id);
+});
+$('products-grid').addEventListener('keydown', e => {
+  const c = e.target.closest('.product-card');
+  if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openProductCalendar(c.dataset.id); }
+});
+$('new-product-btn').addEventListener('click', () => openProductModal());
+$('back-products').addEventListener('click', () => { state.calProduct = null; renderProducts(); });
+$('cal-prev').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() - 1, 1); renderCalendar(); });
+$('cal-next').addEventListener('click', () => { state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() + 1, 1); renderCalendar(); });
+$('cal-today').addEventListener('click', () => { state.calMonth = startOfMonth(new Date()); renderCalendar(); });
+
+function renderCalendar() {
+  const prod = productById(state.calProduct);
+  if (!prod) { state.calProduct = null; return renderProducts(); }
+  $('products-list').hidden = true; $('product-calendar').hidden = false;
+  $('cal-product-name').textContent = prod.name;
+  const m = state.calMonth;
+  const monthLabel = m.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  $('cal-month').textContent = monthLabel[0].toUpperCase() + monthLabel.slice(1);
+
+  const byDay = {};
+  state.visits.filter(v => v.product_id === prod.id).forEach(v => {
+    const k = ymd(new Date(v.scheduled_at)); (byDay[k] ||= []).push(v);
+  });
+  const todayKey = ymd(new Date());
+  const dows = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < m.getDay(); i++) html += '<div class="cal-day other"></div>';
+  const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(m.getFullYear(), m.getMonth(), d);
+    const key = ymd(date);
+    const evs = (byDay[key] || []).sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    const past = key < todayKey;
+    html += `<button class="cal-day ${key === todayKey ? 'today' : ''}" data-date="${key}" ${past && !evs.length ? 'disabled' : ''}
+      title="${past ? 'Dia passado' : 'Agendar visita'}">
+      <span class="num">${d}</span>
+      ${evs.slice(0, 2).map(v => `<span class="cal-ev ${v.status}">${hm(new Date(v.scheduled_at))} ${esc(v.client_name)}</span>`).join('')}
+      ${evs.length > 2 ? `<span class="cal-more">+${evs.length - 2}</span>` : ''}
+    </button>`;
+  }
+  $('cal-grid').innerHTML = html;
+}
+$('cal-grid').addEventListener('click', e => {
+  const d = e.target.closest('.cal-day'); if (!d || d.disabled || !d.dataset.date) return;
+  const past = d.dataset.date < ymd(new Date());
+  if (past) return openDayModal(d.dataset.date);
+  openVisitModal({ product_id: state.calProduct, date: d.dataset.date });
+});
+
+// Lista das visitas de um dia passado (somente leitura).
+function openDayModal(date) {
+  const evs = state.visits.filter(v => v.product_id === state.calProduct && ymd(new Date(v.scheduled_at)) === date);
+  const st = { agendada: 'Agendada', aguardando_feedback: 'Aguardando feedback', realizada: 'Realizada', nao_compareceu: 'Não compareceu' };
+  modal(`<h2>${fmtDate(date + 'T12:00')}</h2><div class="sub">${esc(productName(state.calProduct))}</div>
+    <table>${evs.map(v => `<tr><td>${hm(new Date(v.scheduled_at))}</td><td>${esc(v.client_name)}</td><td>${st[v.status]}</td></tr>`).join('')}</table>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Fechar</button></div>`);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Modal genérico
+// ══════════════════════════════════════════════════════════════════════════════
+function modal(html, onSubmit) {
+  const root = $('modal-root');
+  root.innerHTML = `<div class="modal-bg"><form class="modal" novalidate>${html}</form></div>`;
+  const bg = root.firstElementChild, form = bg.firstElementChild;
+  const close = () => { root.innerHTML = ''; document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  bg.addEventListener('mousedown', e => { if (e.target === bg) close(); });
+  form.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); close(); }));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!onSubmit) return close();
+    if (!form.reportValidity()) return;
+    const btn = form.querySelector('[type=submit]'); if (btn) btn.disabled = true;
+    const err = form.querySelector('.modal-error');
+    if (err) err.hidden = true;
+    try { await onSubmit(new FormData(form), form, e.submitter); close(); }
+    catch (ex) { if (err) { err.textContent = errMsg(ex); err.hidden = false; } }
+    finally { if (btn) btn.disabled = false; }
+  });
+  form.querySelector('input:not([type=hidden]), textarea, select')?.focus();
+  return form;
+}
+
+// ── Criar / editar visita ─────────────────────────────────────────────────────
+function openVisitModal({ product_id, date, visit }) {
+  const prod = productById(visit?.product_id ?? product_id);
+  const d = visit ? new Date(visit.scheduled_at) : null;
+  const sdrs = team().filter(p => p.active !== false);
+  const defaultSdr = visit?.sdr_id ?? state.me.id;
+  modal(`
+    <h2>${visit ? 'Editar visita' : 'Nova visita'}</h2>
+    <div class="sub">${esc(prod?.name ?? '')}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome do evento</label><input name="title" type="text" value="${esc(visit?.title ?? 'Visita — ' + (prod?.name ?? ''))}" required></div>
+    <div class="field"><label>Nome do cliente</label><input name="client_name" type="text" value="${esc(visit?.client_name ?? '')}" required placeholder="Quem vai visitar"></div>
+    <div class="grid2">
+      <div class="field"><label>Telefone / WhatsApp do lead</label><input name="lead_phone" type="tel" inputmode="tel" value="${esc(visit?.lead_phone ?? '')}" ${visit ? '' : 'required'} placeholder="(11) 98765-4321" autocomplete="off"></div>
+      <div class="field"><label>E-mail do lead (opcional)</label><input name="lead_email" type="email" value="${esc(visit?.lead_email ?? '')}" placeholder="nome@email.com" autocomplete="off"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Data</label><input name="date" type="date" value="${d ? ymd(d) : date}" min="${visit ? '' : ymd(new Date())}" required></div>
+      <div class="field"><label>Horário</label><input name="time" type="time" value="${d ? hm(d) : '10:00'}" required></div>
+    </div>
+    <div class="field"><label>Modalidade</label>
+      <div class="seg">
+        <label><input type="radio" name="modality" value="presencial" ${(visit?.modality ?? 'presencial') === 'presencial' ? 'checked' : ''}><span>Presencial</span></label>
+        <label><input type="radio" name="modality" value="online" ${visit?.modality === 'online' ? 'checked' : ''}><span>Online</span></label>
+      </div>
+    </div>
+    <div class="field"><label>SDR responsável</label>
+      ${isAdmin()
+        ? `<select name="sdr_id" required>${sdrs.map(p => `<option value="${esc(p.id)}" ${p.id === defaultSdr ? 'selected' : ''}>${esc(p.full_name)}</option>`).join('')}</select>`
+        : `<input type="hidden" name="sdr_id" value="${esc(state.me.id)}"><input type="text" value="${esc(state.me.full_name)}" disabled>`}
+    </div>
+    <div class="field"><label>Observação</label><textarea name="notes" placeholder="Informações importantes para a visita">${esc(visit?.notes ?? '')}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close>Cancelar</button>
+      <button class="btn-primary" type="submit">${visit ? 'Salvar' : 'Agendar visita'}</button>
+    </div>`,
+  async fd => {
+    const payload = {
+      title: fd.get('title').trim(),
+      client_name: fd.get('client_name').trim(),
+      lead_phone: fd.get('lead_phone').trim() || null,
+      lead_email: fd.get('lead_email').trim() || null,
+      scheduled_at: new Date(`${fd.get('date')}T${fd.get('time')}`).toISOString(),
+      modality: fd.get('modality'),
+      sdr_id: fd.get('sdr_id'),
+      notes: fd.get('notes').trim() || null,
+    };
+    if (!visit && new Date(payload.scheduled_at) < new Date()) throw new Error('Escolha uma data e horário futuros.');
+    // Reagendou para uma data futura: a visita volta para "Agendadas" e o pedido do incorporador é atendido.
+    const dateChanged = visit && new Date(payload.scheduled_at).getTime() !== new Date(visit.scheduled_at).getTime();
+    if (visit && isAwaitingFeedback(visit) && (dateChanged || visit.reschedule_requested) && new Date(payload.scheduled_at) > new Date()) {
+      Object.assign(payload, { status: 'agendada', reschedule_requested: false });
+    }
+    if (payload.lead_phone && payload.lead_phone.replace(/\D/g, '').length < 10) throw new Error('Informe o telefone com DDD, por exemplo (11) 98765-4321.');
+    const saved = visit ? await api.updateVisit(visit.id, payload) : await api.createVisit({ ...payload, product_id: prod.id });
+    toast(visit ? 'Visita atualizada.' : 'Visita agendada! Ela já aparece em Visitas agendadas.');
+    await refresh();
+    syncGhl(saved?.id ?? visit?.id);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Aba Visitas agendadas
+// ══════════════════════════════════════════════════════════════════════════════
+function ghlBadge(v) {
+  if (v.ghl_sync_status === 'ok') return '<div class="muted" title="Agendamento criado no GoHighLevel">✓ no GoHighLevel</div>';
+  if (v.ghl_sync_status === 'erro') return `<div><span class="pill pill-no" title="${esc(v.ghl_sync_error || '')}">não enviada ao GHL</span></div>`;
+  return '';
+}
+
+function renderAgendadas() {
+  const now = new Date();
+  const base = filtered('ag').filter(isOpen);
+  const feedback = base.filter(v => isAwaitingFeedback(v, now));
+  const upcoming = base.filter(v => !isAwaitingFeedback(v, now));
+  $('ag-count-proximas').textContent = upcoming.length;
+  $('ag-count-feedback').textContent = feedback.length;
+  const isFeedback = state.agSub === 'feedback';
+  const rows = isFeedback ? feedback.slice().reverse() : upcoming;
+  if (!rows.length) {
+    $('ag-table').innerHTML = isFeedback
+      ? '<div class="empty">Nenhuma visita aguardando feedback.</div>'
+      : '<div class="empty">Nenhuma visita agendada. Vá em Produtos para marcar uma.</div>';
+    return;
+  }
+  $('ag-table').innerHTML = `<table>
+    <thead><tr><th>Data da visita</th><th>Cliente</th><th>Produto</th><th>Modalidade</th><th>SDR responsável</th><th></th></tr></thead>
+    <tbody>${rows.map(v => {
+      const late = isAwaitingFeedback(v, now);
+      const manual = v.status === 'aguardando_feedback';
+      const p = productById(v.product_id);
+      return `<tr>
+        <td>${fmtDateTime(v.scheduled_at)} ${v.reschedule_requested ? `<span class="pill pill-no">reagendar · ${v.feedback_source === 'cliente' ? 'pedido do incorporador' : 'voltou da negociação'}</span>` : late ? '<span class="pill pill-late">aguardando feedback</span>' : ''}</td>
+        <td>${esc(v.client_name)}${v.lead_phone ? `<div class="muted">${esc(v.lead_phone)}</div>` : ''}${v.notes ? `<div class="muted">${esc(v.notes)}</div>` : ''}${ghlBadge(v)}${v.reschedule_requested && v.reschedule_note ? `<div class="muted"><b>${v.feedback_source === 'cliente' ? 'Incorporador' : 'Recado'}:</b> ${esc(v.reschedule_note)}</div>` : ''}</td>
+        <td><span class="dot" style="background:${esc(p?.color || '#888')}"></span>${esc(productName(v.product_id))}</td>
+        <td><span class="pill pill-${v.modality}">${v.modality === 'presencial' ? 'Presencial' : 'Online'}</span></td>
+        <td>${esc(sdrName(v.sdr_id))}</td>
+        <td class="actions">
+          <button class="btn-sm btn-ok" data-act="done" data-id="${esc(v.id)}">✓ Compareceu</button>
+          <button class="btn-sm btn-no" data-act="noshow" data-id="${esc(v.id)}">Não compareceu</button>
+          ${late ? '' : `<button class="btn-sm" data-act="feedback" data-id="${esc(v.id)}" title="A visita já aconteceu: aguardar o retorno do cliente">Aguardando feedback</button>`}
+          ${manual && !v.reschedule_requested && new Date(v.scheduled_at) >= now ? `<button class="btn-sm" data-act="unfeedback" data-id="${esc(v.id)}">Voltar p/ agendadas</button>` : ''}
+          ${v.ghl_sync_status === 'erro' ? `<button class="btn-sm" data-act="ghl" data-id="${esc(v.id)}">Reenviar ao GHL</button>` : ''}
+          <button class="btn-sm" data-act="edit" data-id="${esc(v.id)}">${v.reschedule_requested ? 'Reagendar' : 'Editar'}</button>
+          ${isAdmin() ? `<button class="btn-sm btn-no" data-act="delete" data-id="${esc(v.id)}">Excluir</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+$('ag-table').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const v = state.visits.find(x => x.id === b.dataset.id); if (!v) return;
+  if (b.dataset.act === 'edit') return openVisitModal({ visit: v });
+  if (b.dataset.act === 'done') return openCompleteModal(v, 'realizada');
+  if (b.dataset.act === 'noshow') return openCompleteModal(v, 'nao_compareceu');
+  if (b.dataset.act === 'delete') return openDeleteVisitModal(v);
+  if (b.dataset.act === 'ghl') { b.disabled = true; b.textContent = 'Enviando…'; return syncGhl(v.id); }
+  if (b.dataset.act === 'feedback' || b.dataset.act === 'unfeedback') {
+    const toFeedback = b.dataset.act === 'feedback';
+    b.disabled = true;
+    try {
+      await api.updateVisit(v.id, { status: toFeedback ? 'aguardando_feedback' : 'agendada' });
+      toast(toFeedback ? 'Visita movida para Aguardando feedback.' : 'Visita voltou para Agendadas.');
+      await refresh();
+    } catch (err) { b.disabled = false; toast(errMsg(err)); }
+  }
+});
+
+// Envia a visita ao GoHighLevel sem travar a tela; falhas ficam marcadas na visita para reenviar.
+async function syncGhl(visitId, action = 'sync') {
+  if (!visitId) return;
+  try {
+    const r = await api.ghlSync(visitId, action);
+    if (r?.ok && action === 'sync') toast('Visita enviada ao GoHighLevel.');
+  } catch (e) {
+    if (action === 'sync') toast('Visita salva, mas não foi enviada ao GoHighLevel: ' + errMsg(e));
+  }
+  if (action === 'sync') await refresh();
+}
+
+function openDeleteVisitModal(v) {
+  modal(`
+    <h2>Excluir visita?</h2>
+    <div class="sub">${esc(v.client_name)} · ${esc(productName(v.product_id))} · ${fmtDateTime(v.scheduled_at)}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <p style="font-size:14px">A visita some da agenda, do portal do incorporador e do dashboard. Não dá para desfazer.</p>
+    <div class="modal-actions" style="margin-top:16px"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-danger" type="submit">Excluir visita</button></div>`,
+  async () => {
+    if (v.ghl_appointment_id) await syncGhl(v.id, 'cancel');
+    await api.deleteVisit(v.id);
+    toast('Visita excluída.'); await refresh();
+  });
+}
+
+function openCompleteModal(v, status) {
+  const done = status === 'realizada';
+  modal(`
+    <h2>${done ? 'Cliente compareceu' : 'Cliente não compareceu'}</h2>
+    <div class="sub">${esc(v.client_name)} · ${esc(productName(v.product_id))} · ${fmtDateTime(v.scheduled_at)}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Observação da visita${done ? '' : ' (opcional)'}</label>
+      <textarea name="completion_notes" ${done ? 'required' : ''} placeholder="${done ? 'Como foi a visita? Interesse, objeções, próximos passos…' : 'Motivo, reagendamento…'}"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close>Cancelar</button>
+      <button class="btn-primary" type="submit">Confirmar</button>
+    </div>`,
+  async fd => {
+    await api.updateVisit(v.id, { status, completion_notes: fd.get('completion_notes').trim() || null, completed_at: new Date().toISOString() });
+    if (v.ghl_appointment_id) syncGhl(v.id);
+    toast(done ? 'Visita movida para Visitas realizadas.' : 'Visita registrada como não comparecida.');
+    await refresh();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Aba Visitas realizadas
+// ══════════════════════════════════════════════════════════════════════════════
+function renderRealizadas() {
+  const base = filtered('re');
+  const groups = {
+    // Venda fecha o ciclo do lead: ele sai de "Compareceu" e fica só em "Vendeu".
+    // Quem foi para a mesa fica na aba Negociação até ter resultado.
+    compareceu: base.filter(v => v.status === 'realizada' && v.sale_status !== 'vendeu' && !inNegotiation(v)),
+    nao_compareceu: base.filter(v => v.status === 'nao_compareceu'),
+    vendeu: base.filter(v => v.status === 'realizada' && v.sale_status === 'vendeu'),
+    nao_vendeu: base.filter(v => v.status === 'realizada' && v.sale_status === 'nao_vendeu'),
+  };
+  Object.entries(groups).forEach(([k, list]) => { $(`re-count-${k}`).textContent = list.length; });
+  const sub = state.reSub;
+  const rows = groups[sub].slice().sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at));
+  if (!rows.length) { $('re-table').innerHTML = '<div class="empty">Nenhuma visita aqui ainda.</div>'; return; }
+
+  const result = v => {
+    const via = v.feedback_source === 'cliente' ? '<div class="muted">via incorporador</div>' : '';
+    const mesa = v.negotiated ? '<div class="muted">passou pela mesa</div>' : '';
+    if (v.sale_status === 'vendeu') return `<span class="pill pill-sale money">Vendeu · ${brl(v.vgv)}</span>${via}${mesa}`;
+    if (v.sale_status === 'nao_vendeu') return `<span class="pill pill-no">Não vendeu</span>${via}${mesa}`;
+    return `<div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm btn-ok" data-sale="vendeu" data-id="${esc(v.id)}">Vendeu</button>
+      <button class="btn-sm btn-no" data-sale="nao_vendeu" data-id="${esc(v.id)}">Não vendeu</button>
+      <button class="btn-sm" data-sale="negociacao" data-id="${esc(v.id)}">Negociação</button></div>`;
+  };
+  const cols = {
+    compareceu: ['Observação da visita', v => esc(v.completion_notes || '—'), 'Resultado', result],
+    nao_compareceu: ['Observação', v => esc(v.completion_notes || '—')],
+    vendeu: ['VGV', v => `<span class="money"><b>${brl2(v.vgv)}</b></span>${v.feedback_source === 'cliente' ? '<div class="muted">via incorporador</div>' : ''}`, 'Observação da venda', v => esc(v.sale_notes || '—')],
+    nao_vendeu: ['Motivo de não comprar', v => esc(v.sale_notes || '—') + (v.feedback_source === 'cliente' ? '<div class="muted">via incorporador</div>' : ''), 'Observação da visita', v => `<span class="muted">${esc(v.completion_notes || '—')}</span>`],
+  }[sub];
+  const extraHead = [], extraCell = [];
+  for (let i = 0; i < cols.length; i += 2) { extraHead.push(cols[i]); extraCell.push(cols[i + 1]); }
+
+  $('re-table').innerHTML = `<table>
+    <thead><tr><th>Data da visita</th><th>Cliente</th>${extraHead.map(h => `<th>${h}</th>`).join('')}<th>Produto</th><th>SDR</th><th></th></tr></thead>
+    <tbody>${rows.map(v => `<tr>
+      <td style="white-space:nowrap">${fmtDate(v.scheduled_at)}</td>
+      <td>${esc(v.client_name)}</td>
+      ${extraCell.map(fn => `<td>${fn(v)}</td>`).join('')}
+      <td class="muted">${esc(productName(v.product_id))}</td>
+      <td class="muted">${esc(sdrName(v.sdr_id))}</td>
+      <td class="actions">${v.sale_status
+        ? `<button class="btn-sm" data-undo-sale="${esc(v.id)}" title="Apagar o resultado da venda">Refazer resultado</button>`
+        : `<button class="btn-sm" data-undo="${esc(v.id)}" title="Voltar para agendadas">Desfazer</button>`}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+$('re-table').addEventListener('click', async e => {
+  const sale = e.target.closest('[data-sale]');
+  if (sale) {
+    const v = state.visits.find(x => x.id === sale.dataset.id);
+    return sale.dataset.sale === 'negociacao' ? openNegotiationModal(v) : openSaleModal(v, sale.dataset.sale);
+  }
+  const undoSale = e.target.closest('[data-undo-sale]');
+  if (undoSale) {
+    if (!confirm('Apagar o resultado da venda desta visita?')) return;
+    try { await api.updateVisit(undoSale.dataset.undoSale, { sale_status: null, vgv: null, sale_notes: null, sale_at: null }); await refresh(); }
+    catch (err) { toast(errMsg(err)); }
+    return;
+  }
+  const b = e.target.closest('[data-undo]'); if (!b) return;
+  if (!confirm('Voltar esta visita para Visitas agendadas?')) return;
+  try {
+    await api.updateVisit(b.dataset.undo, { status: 'agendada', completion_notes: null, completed_at: null });
+    await refresh();
+  } catch (err) { toast(errMsg(err)); }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Aba Negociação (equipe)
+// ══════════════════════════════════════════════════════════════════════════════
+function openNegotiationModal(v) {
+  if (!v) return;
+  modal(`
+    <h2>Enviar para negociação</h2>
+    <div class="sub">${esc(v.client_name)} · ${esc(productName(v.product_id))} · ${fmtDate(v.scheduled_at)}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">O lead sai de “Compareceu” e vai para a aba Negociação até virar venda, não venda ou reagendamento.</p>
+    <div class="field"><label>Proposta / condições (opcional)</label><textarea name="note" placeholder="Ex.: proposta de 20% de entrada, aguardando contraproposta"></textarea></div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Enviar para negociação</button></div>`,
+  async fd => {
+    await api.updateVisit(v.id, { negotiation_at: new Date().toISOString(), negotiation_notes: fd.get('note').trim() || null, negotiated: true, feedback_source: 'equipe' });
+    toast('Lead enviado para a Negociação.'); await refresh();
+  });
+}
+function openReturnModal(v) {
+  if (!v) return;
+  modal(`
+    <h2>Devolver para reagendar</h2>
+    <div class="sub">${esc(v.client_name)} · ${esc(productName(v.product_id))}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">O lead volta para Visitas agendadas → Aguardando feedback, marcado para reagendar com o SDR responsável. A passagem pela mesa continua contando no dashboard.</p>
+    <div class="field"><label>Recado (opcional)</label><textarea name="note" placeholder="Ex.: cliente quer voltar ao decorado com a esposa"></textarea></div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Devolver para reagendar</button></div>`,
+  async fd => {
+    await api.updateVisit(v.id, { status: 'aguardando_feedback', negotiation_at: null, reschedule_requested: true, reschedule_note: fd.get('note').trim() || null, feedback_source: 'equipe' });
+    toast('Lead devolvido para reagendamento.'); await refresh();
+  });
+}
+function renderNegociacao() {
+  const rows = filtered('ng').filter(inNegotiation).sort((a, b) => a.negotiation_at.localeCompare(b.negotiation_at));
+  if (!rows.length) { $('ng-table').innerHTML = '<div class="empty">Nenhum lead em negociação. Em Visitas realizadas → Compareceu, use o botão “Negociação”.</div>'; return; }
+  const now = Date.now();
+  $('ng-table').innerHTML = `<table>
+    <thead><tr><th>Na mesa desde</th><th>Cliente</th><th>Proposta / condições</th><th>Produto</th><th>SDR</th><th></th></tr></thead>
+    <tbody>${rows.map(v => { const days = Math.floor((now - new Date(v.negotiation_at)) / 86400000); return `<tr>
+      <td style="white-space:nowrap">${fmtDate(v.negotiation_at)}<div class="muted">${days === 0 ? 'hoje' : days + ' dia' + (days === 1 ? '' : 's')} · visita ${fmtDate(v.scheduled_at)}</div></td>
+      <td>${esc(v.client_name)}${v.feedback_source === 'cliente' ? '<div class="muted">via incorporador</div>' : ''}</td>
+      <td>${esc(v.negotiation_notes || '—')}</td>
+      <td class="muted">${esc(productName(v.product_id))}</td>
+      <td class="muted">${esc(sdrName(v.sdr_id))}</td>
+      <td class="actions">
+        <button class="btn-sm btn-ok" data-ng="vendeu" data-id="${esc(v.id)}">Vendeu</button>
+        <button class="btn-sm btn-no" data-ng="nao_vendeu" data-id="${esc(v.id)}">Não vendeu</button>
+        <button class="btn-sm" data-ng="reagendar" data-id="${esc(v.id)}">Devolver p/ reagendar</button>
+      </td></tr>`; }).join('')}</tbody></table>`;
+}
+$('ng-table').addEventListener('click', e => {
+  const b = e.target.closest('[data-ng]'); if (!b) return;
+  const v = state.visits.find(x => x.id === b.dataset.id); if (!v) return;
+  if (b.dataset.ng === 'reagendar') return openReturnModal(v);
+  openSaleModal(v, b.dataset.ng);
+});
+
+function openSaleModal(v, outcome) {
+  if (!v) return;
+  const sold = outcome === 'vendeu';
+  const form = modal(`
+    <h2>${sold ? 'Vendeu' : 'Não vendeu'}</h2>
+    <div class="sub">${esc(v.client_name)} · ${esc(productName(v.product_id))} · ${fmtDate(v.scheduled_at)}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    ${sold ? `<div class="field"><label>VGV gerado (R$)</label>
+      <input name="vgv" type="text" inputmode="decimal" required placeholder="Ex.: 850.000,00" autocomplete="off"></div>` : ''}
+    <div class="field"><label>${sold ? 'Observação da venda (opcional)' : 'Por que o cliente não quis comprar?'}</label>
+      <textarea name="sale_notes" ${sold ? '' : 'required'} placeholder="${sold ? 'Unidade, forma de pagamento, condições…' : 'Preço, localização, financiamento, timing…'}"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-close>Cancelar</button>
+      <button class="btn-primary" type="submit">Confirmar</button>
+    </div>`,
+  async fd => {
+    const patch = { sale_status: outcome, sale_notes: fd.get('sale_notes').trim() || null, sale_at: new Date().toISOString(), vgv: null };
+    if (sold) {
+      const n = parseBRL(fd.get('vgv'));
+      if (!Number.isFinite(n) || n <= 0) throw new Error('Informe o VGV em reais, por exemplo 850.000,00.');
+      patch.vgv = Math.round(n * 100) / 100;
+    }
+    await api.updateVisit(v.id, patch);
+    toast(sold ? `Venda registrada: ${brl2(patch.vgv)}.` : 'Registrado como não vendeu.');
+    await refresh();
+  });
+  const input = form.querySelector('[name=vgv]');
+  input?.addEventListener('blur', () => { const n = parseBRL(input.value); if (Number.isFinite(n) && n > 0) input.value = n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Dashboard
+// ══════════════════════════════════════════════════════════════════════════════
+function renderDashboard() {
+  const period = $('db-f-period').value;
+  const now = new Date();
+  let from = null;
+  if (period === 'month') from = startOfMonth(now);
+  else if (period !== 'all') { from = new Date(now); from.setDate(from.getDate() - Number(period)); from.setHours(0, 0, 0, 0); }
+  const vs = filtered('db').filter(v => !from || new Date(v.scheduled_at) >= from);
+
+  const total = vs.length;
+  const shown = vs.filter(v => v.status === 'realizada').length;
+  const noShow = vs.filter(v => v.status === 'nao_compareceu').length;
+  const concluded = shown + noShow;
+  const pending = vs.filter(isOpen);
+  const pres = pending.filter(v => v.modality === 'presencial');
+  const rate = concluded ? Math.round(shown / concluded * 100) : null;
+
+  $('k-total').textContent = total;
+  $('k-show').textContent = shown;
+  $('k-show-sub').textContent = `${noShow} não compareceram`;
+  $('k-rate').textContent = rate === null ? '—' : rate + '%';
+  $('k-rate-sub').textContent = concluded ? `${shown} de ${concluded} visitas concluídas` : 'sem visitas concluídas';
+  $('k-pres').textContent = pres.length;
+  $('k-pres-sub').textContent = `de ${pending.length} ainda agendadas`;
+
+  const sales = vs.filter(v => v.status === 'realizada' && v.sale_status === 'vendeu');
+  const lost = vs.filter(v => v.status === 'realizada' && v.sale_status === 'nao_vendeu').length;
+  const vgv = sales.reduce((a, v) => a + Number(v.vgv || 0), 0);
+  const conv = shown ? Math.round(sales.length / shown * 100) : null;
+  $('k-feedback').textContent = vs.filter(v => isAwaitingFeedback(v, now)).length;
+  $('k-sales').textContent = sales.length;
+  $('k-sales-sub').textContent = `${lost} não vendeu · ${shown - sales.length - lost} sem resultado`;
+  $('k-vgv').textContent = brl(vgv);
+  $('k-vgv-sub').textContent = sales.length ? `ticket médio ${brl(vgv / sales.length)}` : 'nenhuma venda no período';
+  $('k-conv').textContent = conv === null ? '—' : conv + '%';
+  $('k-conv-sub').textContent = shown ? `${sales.length} vendas de ${shown} comparecidas` : 'sem visitas comparecidas';
+
+  const negotiated = vs.filter(v => v.negotiated);
+  const negClosed = negotiated.filter(v => v.sale_status);
+  const negSold = negotiated.filter(v => v.sale_status === 'vendeu');
+  $('k-neg-now').textContent = vs.filter(inNegotiation).length;
+  $('k-neg').textContent = negotiated.length;
+  $('k-neg-sub').textContent = shown ? `${Math.round(negotiated.length / shown * 100)}% das comparecidas` : 'sem visitas comparecidas';
+  $('k-neg-conv').textContent = negClosed.length ? Math.round(negSold.length / negClosed.length * 100) + '%' : '—';
+  $('k-neg-conv-sub').textContent = negClosed.length ? `${negSold.length} vendas de ${negClosed.length} negociações encerradas` : 'nenhuma negociação encerrada';
+
+  const group = (key, label) => {
+    const m = {};
+    vs.forEach(v => {
+      const g = (m[v[key]] ||= { total: 0, shown: 0, concl: 0, sales: 0, vgv: 0, neg: 0 });
+      if (v.negotiated) g.neg++;
+      g.total++;
+      if (v.status === 'realizada') g.shown++;
+      if (v.status === 'realizada' || v.status === 'nao_compareceu') g.concl++;
+      if (v.status === 'realizada' && v.sale_status === 'vendeu') { g.sales++; g.vgv += Number(v.vgv || 0); }
+    });
+    const rows = Object.entries(m).sort((a, b) => b[1].total - a[1].total);
+    if (!rows.length) return '<div class="empty">Sem dados para o filtro.</div>';
+    return `<table><thead><tr><th>${label}</th><th>Agend.</th><th>Compar.</th><th>Show up</th><th>Mesa</th><th>Vendas</th><th>Conv.</th><th>VGV</th></tr></thead><tbody>${rows.map(([id, g]) => {
+      const r = g.concl ? Math.round(g.shown / g.concl * 100) : null;
+      return `<tr><td>${esc(key === 'product_id' ? productName(id) : sdrName(id))}</td><td>${g.total}</td><td>${g.shown}</td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:${r ?? 0}%"></div></div><span>${r === null ? '—' : r + '%'}</span></div></td>
+        <td>${g.neg}</td><td>${g.sales}</td><td>${g.shown ? Math.round(g.sales / g.shown * 100) + '%' : '—'}</td><td class="money">${brl(g.vgv)}</td></tr>`;
+    }).join('')}</tbody></table>`;
+  };
+  $('db-by-product').innerHTML = group('product_id', 'Produto');
+  $('db-by-sdr').innerHTML = group('sdr_id', 'SDR');
+
+  const next = pres.filter(v => new Date(v.scheduled_at) >= now).slice(0, 8);
+  $('db-pres-list').innerHTML = next.length ? `<table><thead><tr><th>Data</th><th>Cliente</th><th>Produto</th><th>SDR</th></tr></thead><tbody>${next.map(v => `<tr>
+    <td>${fmtDateTime(v.scheduled_at)}</td><td>${esc(v.client_name)}</td><td>${esc(productName(v.product_id))}</td><td>${esc(sdrName(v.sdr_id))}</td></tr>`).join('')}</tbody></table>`
+    : '<div class="empty">Nenhuma visita presencial futura.</div>';
+
+  renderWeeklyChart(vs);
+}
+
+function weekStart(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+
+function renderWeeklyChart(vs) {
+  if (typeof Chart === 'undefined') return; // CDN indisponível: o restante do dashboard segue funcionando
+  const weeks = {};
+  vs.forEach(v => {
+    const k = ymd(weekStart(new Date(v.scheduled_at)));
+    const w = (weeks[k] ||= { ag: 0, sh: 0 }); w.ag++; if (v.status === 'realizada') w.sh++;
+  });
+  const keys = Object.keys(weeks).sort().slice(-12);
+  const labels = keys.map(k => 'Sem. ' + new Date(k + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue('--series-1').trim(), c2 = css.getPropertyValue('--series-2').trim();
+  const ink = css.getPropertyValue('--text-secondary').trim(), grid = css.getPropertyValue('--border').trim();
+  if (chart) chart.destroy();
+  chart = new Chart($('db-chart'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Agendadas', data: keys.map(k => weeks[k].ag), backgroundColor: c1, borderRadius: 4, maxBarThickness: 22 },
+      { label: 'Comparecidas', data: keys.map(k => weeks[k].sh), backgroundColor: c2, borderRadius: 4, maxBarThickness: 22 },
+    ] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      datasets: { bar: { categoryPercentage: 0.7, barPercentage: 0.9 } },
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: ink, font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0, color: ink, font: { size: 11 } }, grid: { color: grid }, border: { display: false } },
+      },
+    },
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Administração (somente admin)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderAdmin() {
+  if (!isAdmin()) return switchTab('produtos');
+  $('admin-products').innerHTML = state.products.length ? `<table><tbody>${state.products.map(p => `<tr>
+    <td><span class="dot" style="background:${esc(p.color)}"></span>${esc(p.name)}<div class="muted">${esc(p.location || '')}</div></td>
+    <td>${p.active !== false ? '<span class="pill pill-ok">Ativo</span>' : '<span class="pill pill-no">Inativo</span>'}</td>
+    <td class="actions"><button class="btn-sm" data-edit-product="${esc(p.id)}">Editar</button><button class="btn-sm btn-no" data-delete-product="${esc(p.id)}">Excluir</button></td></tr>`).join('')}</tbody></table>`
+    : '<div class="empty">Nenhum produto.</div>';
+  renderAdminClients();
+  renderGhl();
+  $('admin-users').innerHTML = `<table><tbody>${team().map(u => `<tr>
+    <td>${esc(u.full_name)}<div class="muted">${u.role === 'admin' ? 'Gestor' : 'SDR'}</div></td>
+    <td>${u.active !== false ? '<span class="pill pill-ok">Ativo</span>' : '<span class="pill pill-no">Inativo</span>'}</td>
+    <td class="actions"><button class="btn-sm" data-edit-user="${esc(u.id)}">Editar</button>${u.id !== state.me.id ? `<button class="btn-sm btn-no" data-delete-user="${esc(u.id)}">Excluir</button>` : ''}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// ── Clientes (Portal do Incorporador) ─────────────────────────────────────────
+let clientLinks = [];
+async function renderAdminClients() {
+  const clients = state.profiles.filter(p => p.role === 'cliente');
+  try { clientLinks = await api.clientProducts(); } catch (e) { clientLinks = []; }
+  if (!clients.length) { $('admin-clients').innerHTML = '<div class="empty">Nenhum cliente com acesso ao portal ainda.</div>'; return; }
+  $('admin-clients').innerHTML = `<table><thead><tr><th>Responsável</th><th>Empreendimentos liberados</th><th>Status</th><th></th></tr></thead><tbody>${clients.map(c => {
+    const prods = clientLinks.filter(l => l.client_id === c.id).map(l => productName(l.product_id));
+    return `<tr><td><b>${esc(c.full_name)}</b><div class="muted">${esc(c.company || '')} · ${esc(c.email || '')}</div></td>
+      <td>${prods.length ? prods.map(n => `<span class="pill pill-presencial" style="margin:0 4px 4px 0">${esc(n)}</span>`).join('') : '<span class="muted">nenhum</span>'}</td>
+      <td>${c.active !== false ? '<span class="pill pill-ok">Ativo</span>' : '<span class="pill pill-no">Inativo</span>'}</td>
+      <td class="actions"><button class="btn-sm" data-edit-client="${esc(c.id)}">Editar</button><button class="btn-sm btn-no" data-delete-client="${esc(c.id)}">Excluir</button></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+function productChecks(selected) {
+  const list = state.products.filter(p => p.active !== false || selected.includes(p.id));
+  if (!list.length) return '<div class="muted">Cadastre um produto primeiro.</div>';
+  return `<div class="prod-checks">${list.map(p => `<label><input type="checkbox" name="products" value="${esc(p.id)}" ${selected.includes(p.id) ? 'checked' : ''}> ${esc(p.name)}</label>`).join('')}</div>`;
+}
+// Apagar acesso: cliente sai direto; membro da equipe com visitas precisa passá-las para alguém.
+function openDeleteUserModal(u) {
+  if (!u) return;
+  const client = u.role === 'cliente';
+  const linked = client ? [] : state.visits.filter(v => v.sdr_id === u.id || v.created_by === u.id);
+  const heirs = team().filter(p => p.id !== u.id && p.active !== false);
+  modal(`
+    <h2>Apagar ${client ? 'cliente' : 'acesso'}?</h2>
+    <div class="sub">${esc(u.full_name)}${u.company ? ' · ' + esc(u.company) : ''} · ${esc(u.email || '')}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <p style="font-size:14px;margin-bottom:12px">${client
+      ? 'O login é apagado e a pessoa perde o acesso ao Portal do Incorporador. As visitas do empreendimento continuam no sistema.'
+      : 'O login é apagado e a pessoa não entra mais no sistema. Não dá para desfazer.'}</p>
+    ${linked.length ? `<div class="field"><label>${linked.length} visita${linked.length === 1 ? '' : 's'} de ${esc(u.full_name)} ${linked.length === 1 ? 'passa' : 'passam'} para</label>
+      <select name="transfer_to" required>${heirs.map(p => `<option value="${esc(p.id)}" ${p.id === state.me.id ? 'selected' : ''}>${esc(p.full_name)}${p.role === 'admin' ? ' (gestor)' : ''}</option>`).join('')}</select></div>` : ''}
+    <div class="modal-actions" style="margin-top:16px"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-danger" type="submit">Apagar ${client ? 'cliente' : 'acesso'}</button></div>`,
+  async fd => {
+    await api.deleteUser(u.id, fd.get('transfer_to'));
+    toast(client ? 'Cliente apagado.' : 'Acesso apagado.'); await refresh();
+  });
+}
+
+// ── GoHighLevel por empreendimento (subconta própria) ─────────────────────────
+let ghlConns = [];
+async function renderGhl() {
+  try { ghlConns = await api.ghlStatus(); }
+  catch (e) { $('ghl-list').innerHTML = `<div class="alert alert-error">${esc(errMsg(e))}</div>`; return; }
+  const list = state.products;
+  if (!list.length) { $('ghl-list').innerHTML = '<div class="empty">Cadastre um empreendimento primeiro.</div>'; return; }
+  $('ghl-list').innerHTML = `<table><thead><tr><th>Empreendimento</th><th>Subconta do GHL</th><th>Situação</th><th></th></tr></thead><tbody>${list.map(p => {
+    const c = ghlConns.find(x => x.product_id === p.id);
+    const status = !c ? '<span class="pill pill-online">Não conectado</span>'
+      : c.calendar_id ? `<span class="pill pill-ok">Conectado</span>${c.stage_id ? '' : '<div class="muted">sem etapa do pipeline</div>'}`
+      : '<span class="pill pill-late">Falta escolher o calendário</span>';
+    return `<tr><td><span class="dot" style="background:${esc(p.color)}"></span>${esc(p.name)}</td>
+      <td>${c ? `<code>${esc(c.location_id)}</code>` : '<span class="muted">—</span>'}</td><td>${status}</td>
+      <td class="actions"><button class="btn-sm" data-ghl-edit="${esc(p.id)}">${c ? 'Editar' : 'Conectar'}</button>${c ? `<button class="btn-sm btn-no" data-ghl-remove="${esc(p.id)}">Desconectar</button>` : ''}</td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+$('ghl-list').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-ghl-edit]');
+  if (ed) return openGhlModal(productById(ed.dataset.ghlEdit));
+  const rm = e.target.closest('[data-ghl-remove]'); if (!rm) return;
+  const p = productById(rm.dataset.ghlRemove);
+  modal(`<h2>Desconectar ${esc(p.name)}?</h2><div class="sub">As próximas visitas deste empreendimento deixam de ir para o GoHighLevel. O que já foi enviado continua lá.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="modal-actions" style="margin-top:16px"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-danger" type="submit">Desconectar</button></div>`,
+  async () => { await api.ghlRemove(p.id); toast('Empreendimento desconectado do GHL.'); renderGhl(); });
+});
+
+// Passo 1: subconta + token → "Salvar e buscar calendários". Passo 2: escolher calendário, pipeline e etapa.
+function openGhlModal(p, found, notice) {
+  const c = ghlConns.find(x => x.product_id === p.id);
+  const sel = (name, items, current, ph) => `<select name="${name}"><option value="">${ph}</option>${items.map(i => `<option value="${esc(i.id)}" ${i.id === current ? 'selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`;
+  const pipeId = found?.configured?.pipeline ?? c?.pipeline_id;
+  const stagesOf = id => (found?.pipelines || []).find(x => x.id === id)?.stages || [];
+  const form = modal(`
+    <h2>GoHighLevel · ${esc(p.name)}</h2>
+    <div class="sub">Cada empreendimento usa a sua própria subconta.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    ${notice ? `<div class="alert ${found?.ok ? 'alert-success' : 'alert-error'}">${esc(notice)}</div>` : ''}
+    <div class="field"><label>ID da subconta (Location ID)</label><input name="location_id" type="text" required value="${esc(c?.location_id ?? '')}" placeholder="aparece na URL do GHL, depois de /location/" autocomplete="off"></div>
+    <div class="field"><label>Token da integração privada desta subconta</label><input name="token" type="password" ${c?.has_token ? '' : 'required'} placeholder="${c?.has_token ? 'salvo — deixe em branco para manter' : 'pit-…'}" autocomplete="new-password"></div>
+    ${found?.ok ? `
+      <div class="field"><label>Calendário de agendamento de visita</label>${sel('calendar_id', found.calendars, found.configured?.calendar, 'Escolha o calendário')}</div>
+      <div class="grid2">
+        <div class="field"><label>Pipeline</label>${sel('pipeline_id', found.pipelines, pipeId, 'Sem oportunidade')}</div>
+        <div class="field"><label>Etapa “Visita agendada”</label>${sel('stage_id', stagesOf(pipeId), found.configured?.stage, 'Escolha a etapa')}</div>
+      </div>` : '<p class="muted" style="margin-bottom:8px">Salve a subconta e o token para carregar os calendários e pipelines dela.</p>'}
+    <div class="modal-actions" style="flex-wrap:wrap">
+      <button class="btn-secondary" data-close>Cancelar</button>
+      <button class="btn-secondary" type="submit" value="load">${found?.ok ? 'Recarregar da subconta' : 'Salvar e buscar calendários'}</button>
+      ${found?.ok ? '<button class="btn-primary" type="submit" value="save">Salvar conexão</button>' : ''}
+    </div>`,
+  async (fd, _f, submitter) => {
+    const base = { product_id: p.id, location_id: fd.get('location_id').trim(), token: fd.get('token').trim() };
+    if (submitter?.value === 'save') {
+      if (!fd.get('calendar_id')) throw new Error('Escolha o calendário de agendamento de visita.');
+      if (fd.get('pipeline_id') && !fd.get('stage_id')) throw new Error('Escolha a etapa “Visita agendada” do pipeline.');
+      await api.ghlSetConnection({ ...base, calendar_id: fd.get('calendar_id'), pipeline_id: fd.get('pipeline_id'), stage_id: fd.get('stage_id') });
+      toast(`${p.name} conectado ao GoHighLevel.`); renderGhl(); return;
+    }
+    await api.ghlSetConnection({ ...base, calendar_id: c?.calendar_id, pipeline_id: c?.pipeline_id, stage_id: c?.stage_id });
+    ghlConns = await api.ghlStatus();
+    const r = await api.ghlDiscover(p.id);
+    setTimeout(() => openGhlModal(p, r, r.ok ? 'Subconta conectada. Agora escolha o calendário e a etapa.' : (r.error || 'Não foi possível acessar a subconta. Confira o ID e o token.')), 0);
+  });
+  // Ao trocar o pipeline, recarrega as etapas dele
+  form.querySelector('[name=pipeline_id]')?.addEventListener('change', ev => {
+    const st = form.querySelector('[name=stage_id]');
+    st.innerHTML = '<option value="">Escolha a etapa</option>' + stagesOf(ev.target.value).map(i => `<option value="${esc(i.id)}">${esc(i.name)}</option>`).join('');
+  });
+}
+
+$('add-client-btn').addEventListener('click', () => {
+  modal(`
+    <h2>Novo acesso de cliente</h2><div class="sub">O responsável pelo empreendimento entra no mesmo site e vê só o Portal do Incorporador.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome do responsável</label><input name="full_name" type="text" required></div>
+    <div class="field"><label>Incorporadora</label><input name="company" type="text" required placeholder="Ex.: Greenview Incorporadora"></div>
+    <div class="field"><label>E-mail</label><input name="email" type="email" required></div>
+    <div class="field"><label>Senha provisória</label><input name="password" type="text" minlength="8" required placeholder="mínimo 8 caracteres"></div>
+    <div class="field"><label>Empreendimentos que ele vê</label>${productChecks([])}</div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Criar acesso</button></div>`,
+  async fd => {
+    const ids = fd.getAll('products');
+    if (!ids.length) throw new Error('Marque pelo menos um empreendimento.');
+    const company = fd.get('company').trim();
+    const created = await api.createUser({ full_name: fd.get('full_name').trim(), email: fd.get('email').trim(), password: fd.get('password'), role: 'cliente', company });
+    // Garante o papel de cliente mesmo com a função de login antiga (que só conhece SDR/gestor).
+    await api.updateProfile(created.id, { role: 'cliente', company });
+    await api.setClientProducts(created.id, ids);
+    toast('Acesso de cliente criado.'); await refresh();
+  });
+});
+$('admin-clients').addEventListener('click', e => {
+  const del = e.target.closest('[data-delete-client]');
+  if (del) return openDeleteUserModal(profileById(del.dataset.deleteClient));
+  const b = e.target.closest('[data-edit-client]'); if (!b) return;
+  const c = profileById(b.dataset.editClient);
+  const selected = clientLinks.filter(l => l.client_id === c.id).map(l => l.product_id);
+  modal(`
+    <h2>Editar acesso de cliente</h2><div class="sub">${esc(c.email || '')}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome do responsável</label><input name="full_name" type="text" value="${esc(c.full_name)}" required></div>
+    <div class="field"><label>Incorporadora</label><input name="company" type="text" value="${esc(c.company || '')}" required></div>
+    <div class="field"><label>Empreendimentos que ele vê</label>${productChecks(selected)}</div>
+    <div class="field"><label>Status</label><select name="active"><option value="1">Ativo</option><option value="0" ${c.active === false ? 'selected' : ''}>Inativo</option></select></div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Salvar</button></div>`,
+  async fd => {
+    await api.updateProfile(c.id, { full_name: fd.get('full_name').trim(), company: fd.get('company').trim(), active: fd.get('active') === '1' });
+    await api.setClientProducts(c.id, fd.getAll('products'));
+    toast('Acesso de cliente atualizado.'); await refresh();
+  });
+});
+
+$('add-product-btn').addEventListener('click', () => openProductModal());
+$('admin-products').addEventListener('click', e => {
+  const ed = e.target.closest('[data-edit-product]'); if (ed) return openProductModal(productById(ed.dataset.editProduct));
+  const del = e.target.closest('[data-delete-product]'); if (del) openDeleteProductModal(productById(del.dataset.deleteProduct));
+});
+
+// Exclusão: sem visitas, apaga direto; com visitas, oferece desativar (mantém o histórico do dashboard) ou apagar tudo.
+function openDeleteProductModal(p) {
+  if (!p) return;
+  const linked = state.visits.filter(v => v.product_id === p.id);
+  const pending = linked.filter(isOpen).length;
+  const body = linked.length
+    ? `<p style="font-size:14px;margin-bottom:10px">Este produto tem <b>${linked.length} visita${linked.length === 1 ? '' : 's'}</b> registrada${linked.length === 1 ? '' : 's'}${pending ? ` (${pending} ainda agendada${pending === 1 ? '' : 's'})` : ''}.</p>
+       <p style="font-size:13px;color:var(--text-secondary)"><b>Desativar</b> tira o produto da aba Produtos e mantém o histórico no dashboard.<br><b>Excluir tudo</b> apaga o produto e todas essas visitas. Não dá para desfazer.</p>`
+    : `<p style="font-size:14px">O produto será apagado. Não dá para desfazer.</p>`;
+  modal(`
+    <h2>Excluir “${esc(p.name)}”?</h2><div class="sub">${esc(p.location || '')}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    ${body}
+    <div class="modal-actions" style="margin-top:16px;flex-wrap:wrap">
+      <button class="btn-secondary" data-close>Cancelar</button>
+      ${linked.length ? `<button class="btn-secondary" type="submit" value="deactivate">Desativar</button>
+      <button class="btn-danger" type="submit" value="all">Excluir tudo</button>`
+      : `<button class="btn-danger" type="submit" value="delete">Excluir produto</button>`}
+    </div>`,
+  async (_fd, _form, submitter) => {
+    const choice = submitter?.value;
+    if (choice === 'deactivate') {
+      await api.saveProduct({ id: p.id, active: false });
+      toast('Produto desativado. O histórico continua no dashboard.');
+    } else {
+      await api.deleteProduct(p.id, choice === 'all');
+      toast('Produto excluído.');
+    }
+    if (state.calProduct === p.id) state.calProduct = null;
+    await refresh();
+  });
+}
+function openProductModal(p) {
+  modal(`
+    <h2>${p ? 'Editar produto' : 'Novo produto'}</h2><div class="sub">Empreendimento disponível para agendamento.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome</label><input name="name" type="text" value="${esc(p?.name ?? '')}" required></div>
+    <div class="field"><label>Localização</label><input name="location" type="text" value="${esc(p?.location ?? '')}"></div>
+    <div class="grid2">
+      <div class="field"><label>Cor</label><input name="color" type="color" value="${esc(p?.color ?? '#378ADD')}" style="height:38px;width:100%"></div>
+      <div class="field"><label>Status</label><select name="active"><option value="1">Ativo</option><option value="0" ${p?.active === false ? 'selected' : ''}>Inativo</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Salvar</button></div>`,
+  async fd => {
+    await api.saveProduct({ ...(p ? { id: p.id } : {}), name: fd.get('name').trim(), location: fd.get('location').trim() || null, color: fd.get('color'), active: fd.get('active') === '1' });
+    toast('Produto salvo.'); await refresh();
+  });
+}
+
+$('add-user-btn').addEventListener('click', () => {
+  modal(`
+    <h2>Novo acesso</h2><div class="sub">Cria o login do SDR. A pessoa entra com este e-mail e a senha provisória.</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome completo</label><input name="full_name" type="text" required></div>
+    <div class="field"><label>E-mail</label><input name="email" type="email" required></div>
+    <div class="field"><label>Senha provisória</label><input name="password" type="text" minlength="8" required placeholder="mínimo 8 caracteres"></div>
+    <div class="field"><label>Perfil</label><select name="role"><option value="sdr">SDR</option><option value="admin">Gestor (admin)</option></select></div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Criar acesso</button></div>`,
+  async fd => {
+    await api.createUser({ full_name: fd.get('full_name').trim(), email: fd.get('email').trim(), password: fd.get('password'), role: fd.get('role') });
+    toast('Acesso criado.'); await refresh();
+  });
+});
+$('admin-users').addEventListener('click', e => {
+  const del = e.target.closest('[data-delete-user]');
+  if (del) return openDeleteUserModal(profileById(del.dataset.deleteUser));
+  const b = e.target.closest('[data-edit-user]'); if (!b) return;
+  const u = profileById(b.dataset.editUser);
+  modal(`
+    <h2>Editar acesso</h2><div class="sub">${esc(u.email || '')}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    <div class="field"><label>Nome completo</label><input name="full_name" type="text" value="${esc(u.full_name)}" required></div>
+    <div class="grid2">
+      <div class="field"><label>Perfil</label><select name="role"><option value="sdr">SDR</option><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Gestor (admin)</option></select></div>
+      <div class="field"><label>Status</label><select name="active"><option value="1">Ativo</option><option value="0" ${u.active === false ? 'selected' : ''}>Inativo</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">Salvar</button></div>`,
+  async fd => {
+    if (u.id === state.me.id && (fd.get('role') !== 'admin' || fd.get('active') !== '1')) throw new Error('Você não pode remover seu próprio acesso de gestor.');
+    await api.updateProfile(u.id, { full_name: fd.get('full_name').trim(), role: fd.get('role'), active: fd.get('active') === '1' });
+    toast('Acesso atualizado.'); await refresh();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Portal do Cliente (somente leitura, sem dados de SDR)
+// ══════════════════════════════════════════════════════════════════════════════
+const pt = { products: [], visits: [], product: null, period: 'all', tab: 'geral', month: startOfMonth(new Date()) };
+let ptChart = null;
+
+async function enterPortal() {
+  $('app-view').hidden = true;
+  $('portal-view').hidden = false;
+  $('pt-name').textContent = state.me.full_name;
+  $('pt-company').textContent = state.me.company || '';
+  $('pt-avatar').textContent = initials(state.me.full_name);
+  pt.tab = 'geral'; pt.month = startOfMonth(new Date());
+  $('pt-tabs').querySelectorAll('.pt-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === 'geral'));
+  await ptLoad();
+}
+async function ptLoad() {
+  try {
+    [pt.products, pt.visits] = await Promise.all([api.products(), api.clientVisits()]);
+  } catch (e) {
+    pt.products = []; pt.visits = [];
+    toast('Erro ao carregar o portal: ' + errMsg(e));
+  }
+  pt.products = pt.products.filter(p => p.active !== false);
+  if (!pt.products.some(p => p.id === pt.product)) pt.product = pt.products[0]?.id ?? null;
+  $('pt-select').innerHTML = pt.products.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  $('pt-select').value = pt.product ?? '';
+  $('pt-select-wrap').hidden = pt.products.length < 2;
+  renderPortal();
+}
+$('pt-logout').addEventListener('click', async () => { await api.signOut(); showLogin(); });
+$('pt-select').addEventListener('change', e => { pt.product = e.target.value; renderPortal(); });
+$('pt-tabs').addEventListener('click', e => {
+  const b = e.target.closest('.pt-tab'); if (!b) return;
+  pt.tab = b.dataset.tab;
+  $('pt-tabs').querySelectorAll('.pt-tab').forEach(t => t.classList.toggle('on', t === b));
+  renderPortal();
+});
+$('pt-period').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  pt.period = b.dataset.p === 'all' ? 'all' : Number(b.dataset.p);
+  $('pt-period').querySelectorAll('button').forEach(t => t.classList.toggle('on', t === b));
+  renderPortal();
+});
+$('pt-prev').addEventListener('click', () => { pt.month = new Date(pt.month.getFullYear(), pt.month.getMonth() - 1, 1); ptAgenda(); });
+$('pt-next-m').addEventListener('click', () => { pt.month = new Date(pt.month.getFullYear(), pt.month.getMonth() + 1, 1); ptAgenda(); });
+
+const ptMine = () => pt.visits.filter(v => v.product_id === pt.product);
+// Período conta a partir de uma data, sem teto: uma visita marcada para frente que já recebeu
+// resultado (ex.: vendida antes do dia) continua aparecendo nas listas e no dashboard.
+function ptInPeriod(list) {
+  if (pt.period === 'all') {
+    $('pt-period-note').textContent = 'Todo o histórico do empreendimento, incluindo as visitas já marcadas para frente';
+    return list;
+  }
+  const from = new Date(); from.setDate(from.getDate() - pt.period); from.setHours(0, 0, 0, 0);
+  $('pt-period-note').textContent = `Desde ${from.toLocaleDateString('pt-BR')}, incluindo as visitas já marcadas para frente`;
+  return list.filter(v => new Date(v.scheduled_at) >= from);
+}
+
+function renderPortal() {
+  const p = pt.products.find(x => x.id === pt.product);
+  const none = !p;
+  $('pt-empty').hidden = !none;
+  $('pt-prod').textContent = p ? p.name : 'Portal do Incorporador';
+  $('pt-loc').textContent = p?.location || '';
+  ['geral', 'agenda', 'feedback', 'realizadas', 'negociacao', 'vendas'].forEach(t => { $('pt-' + t).hidden = none || pt.tab !== t; });
+  $('pt-toolbar').hidden = none || pt.tab === 'agenda' || pt.tab === 'feedback' || pt.tab === 'negociacao';
+  $('pt-neg-count').textContent = ptMine().filter(inNegotiation).length;
+  $('pt-fb-count').textContent = ptMine().filter(v => ptOpen(v) && !v.reschedule_requested && new Date(v.scheduled_at) < new Date()).length;
+  if (none) return;
+  if (pt.tab === 'geral') ptGeral();
+  if (pt.tab === 'agenda') ptAgenda();
+  if (pt.tab === 'feedback') ptFeedback();
+  if (pt.tab === 'realizadas') ptDone();
+  if (pt.tab === 'vendas') ptSales();
+  if (pt.tab === 'negociacao') ptNegotiation();
+  $('pt-sales-count').textContent = ptInPeriod(ptMine()).filter(v => v.status === 'realizada' && v.sale_status === 'vendeu').length;
+}
+
+function ptGeral() {
+  const all = ptMine(); const vs = ptInPeriod(all); const now = new Date();
+  const shown = vs.filter(v => v.status === 'realizada');
+  const noShow = vs.filter(v => v.status === 'nao_compareceu').length;
+  const sales = shown.filter(v => v.sale_status === 'vendeu');
+  const vgv = sales.reduce((a, v) => a + Number(v.vgv || 0), 0);
+  const concl = shown.length + noShow;
+  $('pk-ag').textContent = vs.length;
+  const future = vs.filter(v => ptOpen(v) && new Date(v.scheduled_at) >= now).length;
+  $('pk-ag-s').textContent = `${vs.filter(v => v.modality === 'presencial').length} presenciais · ${future} ainda por acontecer`;
+  $('pk-co').textContent = shown.length;
+  $('pk-co-s').textContent = `${noShow} não compareceram`;
+  $('pk-sh').textContent = concl ? Math.round(shown.length / concl * 100) + '%' : '—';
+  $('pk-ve').textContent = sales.length;
+  $('pk-ve-s').textContent = shown.length ? `${Math.round(sales.length / shown.length * 100)}% de conversão` : 'sem visitas concluídas';
+  $('pk-vgv').textContent = brl(vgv);
+  $('pk-vgv-s').textContent = sales.length ? `ticket médio ${brl(vgv / sales.length)}` : 'nenhuma venda no período';
+  const negotiated = vs.filter(v => v.negotiated);
+  $('pk-neg').textContent = negotiated.length;
+  $('pk-neg-s').textContent = `${vs.filter(inNegotiation).length} na mesa agora${shown.length ? ' · ' + Math.round(negotiated.length / shown.length * 100) + '% das comparecidas' : ''}`;
+
+  const max = Math.max(vs.length, 1);
+  $('pt-funnel').innerHTML = [['Agendadas', vs.length], ['Compareceram', shown.length], ['Negociação', negotiated.length], ['Vendas', sales.length]]
+    .map(([l, n]) => `<div class="f-row"><span>${l}</span><div class="bar"><i style="width:${n ? Math.max(n / max * 100, 3) : 0}%"></i></div><span class="v">${n}</span></div>`).join('')
+    + `<div class="f-rate">${vs.length ? Math.round(shown.length / vs.length * 100) : 0}% chegam à visita · ${shown.length ? Math.round(sales.length / shown.length * 100) : 0}% das visitas viram venda</div>`;
+
+  const upcoming = all.filter(v => (v.status === 'agendada' || v.status === 'aguardando_feedback') && new Date(v.scheduled_at) >= now);
+  $('pt-next-note').textContent = upcoming.length ? `${upcoming.length} agendada${upcoming.length === 1 ? '' : 's'} a partir de hoje` : '';
+  $('pt-next').innerHTML = upcoming.length ? upcoming.slice(0, 8).map(v => { const d = new Date(v.scheduled_at); return `<div class="pt-item">
+      <div class="pt-date"><b>${pad(d.getDate())}</b><span>${d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></div>
+      <div><div class="t">${esc(v.client_name)}</div><div class="s">${d.toLocaleDateString('pt-BR', { weekday: 'long' })} · ${hm(d)}${v.notes ? ' · ' + esc(v.notes) : ''}</div></div>
+      <span class="pill pill-${v.modality}">${v.modality === 'presencial' ? 'Presencial' : 'Online'}</span></div>`; }).join('')
+    : '<div class="empty">Nenhuma visita agendada daqui para frente.</div>';
+  ptDrawChart(vs);
+}
+
+function ptDrawChart(vs) {
+  if (typeof Chart === 'undefined') return;
+  const w = {};
+  vs.forEach(v => { const k = ymd(weekStart(new Date(v.scheduled_at))); (w[k] ||= { a: 0, c: 0 }); w[k].a++; if (v.status === 'realizada') w[k].c++; });
+  const keys = Object.keys(w).sort();
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue('--series-1').trim(), c2 = css.getPropertyValue('--series-2').trim();
+  const ink = css.getPropertyValue('--text-secondary').trim(), grid = css.getPropertyValue('--border').trim();
+  if (ptChart) ptChart.destroy();
+  ptChart = new Chart($('pt-chart'), {
+    type: 'bar',
+    data: { labels: keys.map(k => 'Sem. ' + new Date(k + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })),
+      datasets: [
+        { label: 'Agendadas', data: keys.map(k => w[k].a), backgroundColor: c1, borderRadius: 4, maxBarThickness: 20 },
+        { label: 'Compareceram', data: keys.map(k => w[k].c), backgroundColor: c2, borderRadius: 4, maxBarThickness: 20 },
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, datasets: { bar: { categoryPercentage: .7, barPercentage: .9 } },
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: { x: { grid: { display: false }, ticks: { color: ink, font: { size: 11 } } },
+        y: { beginAtZero: true, ticks: { precision: 0, color: ink, font: { size: 11 } }, grid: { color: grid }, border: { display: false } } } },
+  });
+}
+
+function ptAgenda() {
+  const m = pt.month;
+  const label = m.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  $('pt-month').textContent = label[0].toUpperCase() + label.slice(1);
+  const byDay = {};
+  ptMine().forEach(v => { (byDay[ymd(new Date(v.scheduled_at))] ||= []).push(v); });
+  const todayKey = ymd(new Date());
+  let html = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < m.getDay(); i++) html += '<div class="cal-day ro other"></div>';
+  const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const key = ymd(new Date(m.getFullYear(), m.getMonth(), d));
+    const evs = (byDay[key] || []).sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    html += `<div class="cal-day ro ${key === todayKey ? 'today' : ''}"><span class="num">${d}</span>${evs.slice(0, 3).map(v =>
+      `<span class="cal-ev ${v.status}" title="${esc(v.client_name)} · ${hm(new Date(v.scheduled_at))}">${hm(new Date(v.scheduled_at))} ${esc(v.client_name)}</span>`).join('')}${evs.length > 3 ? `<span class="cal-more">+${evs.length - 3}</span>` : ''}</div>`;
+  }
+  $('pt-cal').innerHTML = html;
+}
+
+const ptOpen = v => v.status === 'agendada' || v.status === 'aguardando_feedback';
+
+function ptFeedback() {
+  const now = new Date();
+  const open = ptMine().filter(ptOpen);
+  const wait = open.filter(v => !v.reschedule_requested && new Date(v.scheduled_at) < now).reverse();
+  const next = open.filter(v => !v.reschedule_requested && new Date(v.scheduled_at) >= now);
+  const back = open.filter(v => v.reschedule_requested);
+  const row = (v, actions) => { const d = new Date(v.scheduled_at); return `<div class="pt-item">
+    <div class="pt-date"><b>${pad(d.getDate())}</b><span>${d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></div>
+    <div><div class="t">${esc(v.client_name)} <span class="pill pill-${v.modality}" style="margin-left:4px">${v.modality === 'presencial' ? 'Presencial' : 'Online'}</span></div>
+      <div class="s">${d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })} · ${hm(d)}${v.notes ? ' · ' + esc(v.notes) : ''}${v.reschedule_note ? ' · <b>Seu pedido:</b> ' + esc(v.reschedule_note) : ''}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${actions ? `
+      <button class="btn-sm btn-ok" data-fb="vendeu" data-id="${esc(v.id)}">Vendeu</button>
+      <button class="btn-sm btn-no" data-fb="nao_vendeu" data-id="${esc(v.id)}">Não comprou</button>
+      <button class="btn-sm" data-fb="negociacao" data-id="${esc(v.id)}">Negociação</button>
+      <button class="btn-sm" data-fb="reagendar" data-id="${esc(v.id)}">Devolver p/ reagendar</button>` : '<span class="pill pill-late">com a equipe</span>'}</div></div>`; };
+  $('pt-fb-wait').innerHTML = wait.length ? wait.map(v => row(v, true)).join('') : '<div class="empty">Nenhuma visita esperando o seu feedback.</div>';
+  $('pt-fb-next').innerHTML = next.length ? next.map(v => row(v, true)).join('') : '<div class="empty">Nenhuma visita agendada daqui para frente.</div>';
+  $('pt-fb-back-card').hidden = !back.length;
+  $('pt-fb-back').innerHTML = back.map(v => row(v, false)).join('');
+}
+$('pt-done').addEventListener('click', e => {
+  const b = e.target.closest('[data-fb]'); if (!b) return;
+  const v = pt.visits.find(x => x.id === b.dataset.id); if (v) openClientFeedback(v, b.dataset.fb);
+});
+$('pt-neg').addEventListener('click', e => {
+  const b = e.target.closest('[data-fb]'); if (!b) return;
+  const v = pt.visits.find(x => x.id === b.dataset.id); if (v) openClientFeedback(v, b.dataset.fb);
+});
+$('pt-feedback').addEventListener('click', e => {
+  const b = e.target.closest('[data-fb]'); if (!b) return;
+  const v = pt.visits.find(x => x.id === b.dataset.id); if (!v) return;
+  openClientFeedback(v, b.dataset.fb);
+});
+
+function openClientFeedback(v, outcome) {
+  const d = new Date(v.scheduled_at);
+  const cfg = {
+    vendeu: { title: 'Vendeu', label: 'Observação da venda (opcional)', ph: 'Unidade, forma de pagamento, condições…', req: false, btn: 'Registrar venda' },
+    nao_vendeu: { title: 'Não comprou', label: 'Por que o cliente não comprou?', ph: 'Preço, localização, financiamento, timing…', req: true, btn: 'Registrar' },
+    negociacao: { title: 'Enviar para negociação', label: 'Proposta / condições (opcional)', ph: 'Ex.: proposta com 20% de entrada, aguardando contraproposta', req: false, btn: 'Enviar para negociação' },
+    reagendar: { title: 'Devolver para reagendamento', label: 'Recado para a equipe (opcional)', ph: 'Ex.: cliente pediu outro dia, não conseguiu vir…', req: false, btn: 'Devolver para a Digital Moon' },
+  }[outcome];
+  const form = modal(`
+    <h2>${cfg.title}</h2>
+    <div class="sub">${esc(v.client_name)} · ${d.toLocaleDateString('pt-BR')} · ${hm(d)}</div>
+    <div class="alert alert-error modal-error" hidden></div>
+    ${outcome === 'reagendar' ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">A visita volta para a equipe da Digital Moon, que entra em contato com o cliente e marca uma nova data.</p>' : ''}
+    ${outcome === 'vendeu' ? `<div class="field"><label>VGV da venda (R$)</label><input name="vgv" type="text" inputmode="decimal" required placeholder="Ex.: 850.000,00" autocomplete="off"></div>` : ''}
+    <div class="field"><label>${cfg.label}</label><textarea name="note" ${cfg.req ? 'required' : ''} placeholder="${cfg.ph}"></textarea></div>
+    <div class="modal-actions"><button class="btn-secondary" data-close>Cancelar</button><button class="btn-primary" type="submit">${cfg.btn}</button></div>`,
+  async fd => {
+    let vgv = null;
+    if (outcome === 'vendeu') {
+      vgv = parseBRL(fd.get('vgv'));
+      if (!Number.isFinite(vgv) || vgv <= 0) throw new Error('Informe o VGV em reais, por exemplo 850.000,00.');
+    }
+    await api.clientFeedback(v.id, outcome, vgv, fd.get('note'));
+    toast(outcome === 'vendeu' ? `Venda registrada: ${brl2(vgv)}. Obrigado!` : outcome === 'nao_vendeu' ? 'Feedback registrado. Obrigado!'
+      : outcome === 'negociacao' ? 'Lead enviado para a Negociação.' : 'Visita devolvida para reagendamento.');
+    await ptLoad();
+  });
+  const input = form.querySelector('[name=vgv]');
+  input?.addEventListener('blur', () => { const n = parseBRL(input.value); if (Number.isFinite(n) && n > 0) input.value = n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
+}
+
+function ptDone() {
+  const now = new Date();
+  // Vendidas fecham o ciclo: aparecem só na aba Vendas.
+  const vs = ptInPeriod(ptMine()).filter(v => (v.status !== 'agendada' || new Date(v.scheduled_at) < now) && v.sale_status !== 'vendeu' && !inNegotiation(v)).reverse();
+  $('pt-done').innerHTML = vs.length ? vs.map(v => {
+    const att = v.status === 'realizada' ? '<span class="pill pill-ok">Sim</span>' : v.status === 'nao_compareceu' ? '<span class="pill pill-no">Não</span>'
+      : v.reschedule_requested ? '<span class="pill pill-no">Devolvida p/ reagendar</span>' : '<span class="pill pill-late">Aguardando retorno</span>';
+    const res = v.sale_status === 'nao_vendeu' ? `<span class="pill pill-no">Não comprou</span>${v.negotiated ? '<div class="muted">passou pela mesa</div>' : ''}`
+      : v.status === 'realizada' ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-sm btn-ok" data-fb="vendeu" data-id="${esc(v.id)}">Vendeu</button>
+          <button class="btn-sm btn-no" data-fb="nao_vendeu" data-id="${esc(v.id)}">Não comprou</button>
+          <button class="btn-sm" data-fb="negociacao" data-id="${esc(v.id)}">Negociação</button></div>`
+      : '<span class="muted">—</span>';
+    const obs = [v.completion_notes, v.sale_notes].filter(Boolean).map(esc).join('<br>') || '—';
+    return `<tr><td style="white-space:nowrap">${fmtDate(v.scheduled_at)}</td><td>${esc(v.client_name)}</td>
+      <td><span class="pill pill-${v.modality}">${v.modality === 'presencial' ? 'Presencial' : 'Online'}</span></td>
+      <td>${att}</td><td>${res}</td><td style="color:var(--text-secondary)">${obs}</td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">Nenhuma visita concluída no período.</td></tr>';
+}
+
+function ptNegotiation() {
+  const rows = ptMine().filter(inNegotiation).sort((a, b) => a.negotiation_at.localeCompare(b.negotiation_at));
+  const now = Date.now();
+  $('pt-neg').innerHTML = rows.length ? rows.map(v => { const d = new Date(v.scheduled_at); const days = Math.floor((now - new Date(v.negotiation_at)) / 86400000); return `<div class="pt-item">
+    <div class="pt-date"><b>${pad(d.getDate())}</b><span>${d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></div>
+    <div><div class="t">${esc(v.client_name)} <span class="pill pill-neg" style="margin-left:4px">na mesa há ${days === 0 ? 'menos de 1 dia' : days + ' dia' + (days === 1 ? '' : 's')}</span></div>
+      <div class="s">${v.negotiation_notes ? esc(v.negotiation_notes) : 'Sem observação da proposta'}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn-sm btn-ok" data-fb="vendeu" data-id="${esc(v.id)}">Vendeu</button>
+      <button class="btn-sm btn-no" data-fb="nao_vendeu" data-id="${esc(v.id)}">Não comprou</button>
+      <button class="btn-sm" data-fb="reagendar" data-id="${esc(v.id)}">Devolver p/ reagendar</button></div></div>`; }).join('')
+    : '<div class="empty">Nenhum lead em negociação. Em Visitas realizadas, use o botão “Negociação”.</div>';
+}
+
+function ptSales() {
+  const vs = ptInPeriod(ptMine()).filter(v => v.status === 'realizada' && v.sale_status === 'vendeu').reverse();
+  const total = vs.reduce((a, v) => a + Number(v.vgv || 0), 0);
+  $('pt-sales-total').textContent = vs.length ? `${vs.length} venda${vs.length === 1 ? '' : 's'} · ${brl(total)} em VGV` : '';
+  $('pt-sales').innerHTML = vs.length ? vs.map(v => `<tr><td style="white-space:nowrap">${fmtDate(v.scheduled_at)}</td><td><b>${esc(v.client_name)}</b></td>
+    <td class="money"><b>${brl2(v.vgv)}</b></td><td style="color:var(--text-secondary)">${esc(v.sale_notes || '—')}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>';
+}
+
+boot();
+</script>
+</body>
+</html>

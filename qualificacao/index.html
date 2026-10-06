@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Digital Moon — Diagnóstico de Lançamento</title>
-<meta name="description" content="Responda 8 perguntas rápidas e receba um diagnóstico da Digital Moon para o marketing do seu lançamento imobiliário.">
+<meta name="description" content="Responda 7 perguntas rápidas e receba um diagnóstico da Digital Moon para o marketing do seu lançamento imobiliário.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -187,14 +187,8 @@
     background: var(--accent-bg); color: var(--accent);
     font-size: 26px; margin-bottom: 22px;
   }
-  .summary {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; margin: 4px 0 26px; max-width: 520px;
-    display: grid; gap: 10px; font-size: 14px;
-  }
-  .summary div { display: flex; justify-content: space-between; gap: 16px; }
-  .summary dt { color: var(--text-3); }
-  .summary dd { color: var(--text); text-align: right; }
+  .btn.whatsapp { background: #25d366; color: #0b1a10; }
+  .options.sending { pointer-events: none; opacity: .6; }
 
   .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
@@ -230,7 +224,7 @@
     <!-- 0. Boas-vindas -->
     <section class="screen active" data-step="intro">
       <h1>Seu próximo lançamento merece um plano de marketing à altura.</h1>
-      <p class="lead">Responda 8 perguntas rápidas sobre a sua incorporadora e o seu lançamento. Nosso time analisa as respostas e retorna com um diagnóstico personalizado.</p>
+      <p class="lead">Responda 7 perguntas rápidas sobre a sua incorporadora e o seu lançamento. Nosso time analisa as respostas e retorna com um diagnóstico personalizado.</p>
       <div class="actions">
         <button type="button" class="btn primary" data-next>Começar →</button>
         <span class="enter-hint">ou pressione <b>Enter ↵</b></span>
@@ -294,7 +288,7 @@
       <h2>Qual é o VGV do lançamento atual (ou do próximo)?</h2>
       <p class="hint">VGV = Valor Geral de Vendas do empreendimento.</p>
       <div class="options">
-        <button type="button" class="option" data-value="Até R$ 20 milhões" data-score="5"><span class="key">A</span><span class="label">Até R$ 20 milhões</span></button>
+        <button type="button" class="option" data-value="Abaixo de R$ 20 milhões" data-score="5"><span class="key">A</span><span class="label">Abaixo de R$ 20 milhões</span></button>
         <button type="button" class="option" data-value="R$ 20 a 50 milhões" data-score="12"><span class="key">B</span><span class="label">R$ 20 a 50 milhões</span></button>
         <button type="button" class="option" data-value="R$ 50 a 100 milhões" data-score="20"><span class="key">C</span><span class="label">R$ 50 a 100 milhões</span></button>
         <button type="button" class="option" data-value="R$ 100 a 300 milhões" data-score="27"><span class="key">D</span><span class="label">R$ 100 a 300 milhões</span></button>
@@ -315,41 +309,16 @@
       <div class="error-msg" aria-live="polite"></div>
     </section>
 
-    <!-- 8. Verba -->
-    <section class="screen" data-step="verba" data-type="choice">
-      <div class="eyebrow"><span class="num">8</span>Sobre o marketing</div>
-      <h2>Qual é a verba destinada ao marketing desse lançamento?</h2>
-      <p class="hint">Considere mídia paga, produção e agência.</p>
-      <div class="options">
-        <button type="button" class="option" data-value="Até R$ 50 mil" data-score="3"><span class="key">A</span><span class="label">Até R$ 50 mil</span></button>
-        <button type="button" class="option" data-value="R$ 50 a 150 mil" data-score="12"><span class="key">B</span><span class="label">R$ 50 a 150 mil</span></button>
-        <button type="button" class="option" data-value="R$ 150 a 300 mil" data-score="20"><span class="key">C</span><span class="label">R$ 150 a 300 mil</span></button>
-        <button type="button" class="option" data-value="R$ 300 mil a 1 milhão" data-score="27"><span class="key">D</span><span class="label">R$ 300 mil a 1 milhão</span></button>
-        <button type="button" class="option" data-value="Acima de R$ 1 milhão" data-score="30"><span class="key">E</span><span class="label">Acima de R$ 1 milhão</span></button>
-        <button type="button" class="option" data-value="Ainda não definida" data-score="5"><span class="key">F</span><span class="label">Ainda não está definida</span></button>
-      </div>
-      <div class="error-msg" aria-live="polite"></div>
-    </section>
-
-    <!-- 9. Revisão / envio -->
-    <section class="screen" data-step="review">
-      <div class="eyebrow">Quase lá</div>
-      <h2>Confere se está tudo certo:</h2>
-      <dl class="summary" id="summary"></dl>
-      <div class="actions">
-        <button type="submit" class="btn primary" id="submitBtn">Enviar respostas →</button>
-        <span class="enter-hint">pressione <b>Enter ↵</b></span>
-      </div>
-      <div class="error-msg" id="submitError" aria-live="polite"></div>
-    </section>
-
-    <!-- 10. Obrigado -->
+    <!-- 8. Obrigado -->
     <section class="screen" data-step="done">
       <div class="done-icon" aria-hidden="true">✓</div>
       <h1>Recebemos, <span data-fill="primeiroNome"></span>!</h1>
-      <p class="lead">Nosso time vai analisar o cenário da <span data-fill="incorporadora"></span> e entrar em contato pelo WhatsApp em até 1 dia útil com o seu diagnóstico.</p>
+      <p class="lead">Nosso time entrará em contato com você em instantes pelo WhatsApp!</p>
       <div class="actions">
-        <a class="btn" href="https://digitalmoonbr.com" id="siteLink">Conhecer a Digital Moon</a>
+        <a class="btn whatsapp" href="#" id="waLink" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.8 14.03c-.25.69-1.44 1.32-1.99 1.4-.51.08-1.15.11-1.86-.12-.43-.14-.98-.32-1.68-.62-2.96-1.28-4.89-4.26-5.04-4.46-.15-.2-1.2-1.6-1.2-3.05 0-1.45.76-2.16 1.03-2.46.27-.3.59-.37.79-.37h.57c.18 0 .43-.07.67.51.25.59.84 2.04.91 2.19.07.15.12.32.02.52-.1.2-.15.32-.3.49-.15.17-.31.38-.45.51-.15.15-.3.31-.13.61.17.3.77 1.27 1.65 2.05 1.13 1.01 2.09 1.32 2.39 1.47.3.15.47.12.64-.07.17-.2.74-.86.94-1.16.2-.3.39-.25.67-.15.27.1 1.73.82 2.03.96.3.15.49.22.57.34.07.13.07.72-.18 1.41Z"/></svg>
+          Chamar no WhatsApp
+        </a>
       </div>
     </section>
   </form>
@@ -363,7 +332,9 @@
 // Enquanto estiverem vazias, o quiz roda em modo prévia: nada é enviado.
 const CONFIG = {
   supabaseUrl: '',
-  supabaseKey: ''
+  supabaseKey: '',
+  // WhatsApp da Digital Moon, só dígitos com DDI + DDD (ex.: 5511912345678)
+  whatsapp: ''
 };
 const PREVIEW = !CONFIG.supabaseUrl || !CONFIG.supabaseKey;
 
@@ -381,11 +352,6 @@ const scores  = {};
 let current   = 0;
 
 const QUESTION_STEPS = screens.filter(s => s.dataset.type).length;
-const LABELS = {
-  nome: 'Nome', email: 'E-mail', telefone: 'WhatsApp', incorporadora: 'Incorporadora',
-  momento: 'Momento', vgv: 'VGV', time_marketing: 'Marketing', verba: 'Verba'
-};
-
 const utm = (() => {
   const p = new URLSearchParams(location.search);
   return {
@@ -424,17 +390,6 @@ function fillPlaceholders() {
   form.querySelectorAll('[data-fill]').forEach(el => { el.textContent = fills[el.dataset.fill] || ''; });
 }
 
-function renderSummary() {
-  const dl = document.getElementById('summary');
-  dl.replaceChildren(...Object.keys(LABELS).map(k => {
-    const row = document.createElement('div');
-    const dt = document.createElement('dt'); dt.textContent = LABELS[k];
-    const dd = document.createElement('dd'); dd.textContent = answers[k] || '—';
-    row.append(dt, dd);
-    return row;
-  }));
-}
-
 function updateChrome() {
   const step = screens[current];
   const qIndex = screens.slice(0, current + 1).filter(s => s.dataset.type).length;
@@ -451,7 +406,7 @@ function go(to, backwards = false) {
   current = to;
   const s = screens[current];
   fillPlaceholders();
-  if (s.dataset.step === 'review') renderSummary();
+  if (s.dataset.step === 'done') setWhatsappLink();
   s.classList.toggle('back', backwards);
   s.classList.add('active');
   updateChrome();
@@ -478,6 +433,7 @@ function next() {
   }
   if (s.dataset.type === 'choice' && !answers[key]) { setError(s, 'Escolha uma opção.'); return; }
   setError(s, '');
+  if (isLastQuestion(s)) { submit(); return; }
   if (current < screens.length - 1) go(current + 1);
 }
 
@@ -494,14 +450,14 @@ form.querySelectorAll('.option').forEach(opt => {
     answers[s.dataset.step] = opt.dataset.value;
     scores[s.dataset.step]  = Number(opt.dataset.score) || 0;
     setError(s, '');
-    setTimeout(next, 280);
+    setTimeout(isLastQuestion(s) ? submit : next, 280);
   });
 });
 
 document.addEventListener('keydown', e => {
   const s = screens[current];
   if (e.key === 'Enter' && !e.shiftKey) {
-    if (s.dataset.step === 'review' || s.dataset.step === 'done') return; // submit nativo do form
+    if (s.dataset.step === 'done') return;
     if (e.target.tagName === 'BUTTON') return; // clique nativo do botão
     e.preventDefault();
     next();
@@ -516,40 +472,51 @@ document.addEventListener('keydown', e => {
 
 // ── Envio ────────────────────────────────────────────────────────────────────
 function temperatura(score) {
-  if (score >= 70) return 'quente';
-  if (score >= 45) return 'morno';
+  if (score >= 50) return 'quente';
+  if (score >= 30) return 'morno';
   return 'frio';
 }
 
-form.addEventListener('submit', async e => {
-  e.preventDefault();
-  if (screens[current].dataset.step !== 'review') return;
-  const btn = document.getElementById('submitBtn');
-  const err = document.getElementById('submitError');
+function isLastQuestion(screen) {
+  return screen === screens.filter(x => x.dataset.type).pop();
+}
+
+function setWhatsappLink() {
+  const msg = `Olá! Acabei de responder o diagnóstico da Digital Moon. Sou ${answers.nome || ''}, da ${answers.incorporadora || ''}.`;
+  document.getElementById('waLink').href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+}
+
+let sending = false;
+async function submit() {
+  if (sending) return;
+  const s = screens[current];
+  const opts = s.querySelector('.options');
 
   if (form.website.value) { go(current + 1); return; } // bot
 
   const score = Object.values(scores).reduce((a, b) => a + b, 0);
   const payload = { ...answers, score, temperatura: temperatura(score), ...utm };
 
-  btn.disabled = true; btn.textContent = 'Enviando…'; err.textContent = '';
+  sending = true; opts.classList.add('sending'); setError(s, '');
   const client = PREVIEW ? null : getClient();
   const { error } = PREVIEW
     ? (console.info('[prévia] payload que seria enviado:', payload), { error: null })
     : client
     ? await client.from('qualificacoes').insert(payload)
     : { error: new Error('supabase-js não carregou') };
-  btn.disabled = false; btn.textContent = 'Enviar respostas →';
+  sending = false; opts.classList.remove('sending');
 
   if (error) {
     console.error(error);
-    err.textContent = 'Não conseguimos enviar agora. Verifique sua conexão e tente novamente.';
+    setError(s, 'Não conseguimos enviar agora. Verifique sua conexão e escolha a opção de novo.');
     return;
   }
   if (window.fbq)  fbq('track', 'Lead');
   if (window.gtag) gtag('event', 'generate_lead', { value: score });
   go(current + 1);
-});
+}
+
+form.addEventListener('submit', e => e.preventDefault());
 
 document.getElementById('previewBadge').hidden = !PREVIEW;
 updateChrome();

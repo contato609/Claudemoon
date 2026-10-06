@@ -11,7 +11,6 @@ create table if not exists public.qualificacoes (
   vgv              text not null,  -- faixa do VGV do lançamento atual
   momento          text not null,  -- está em lançamento ou não
   time_marketing   text not null,  -- próprio / terceirizado / ambos
-  verba            text not null,  -- faixa de verba de marketing
   score            int  not null default 0,
   temperatura      text not null default 'frio', -- quente / morno / frio
   utm_source       text,

@@ -64,6 +64,12 @@
     box-shadow: inset -7px -2px 0 0 var(--bg);
     transform: rotate(-20deg);
   }
+  .brand-right { display: flex; align-items: center; gap: 12px; }
+  .preview-badge {
+    font-size: 11px; font-weight: 500; letter-spacing: .3px;
+    color: var(--accent); background: var(--accent-bg);
+    border-radius: 999px; padding: 4px 10px;
+  }
   .step-count { font-size: 13px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 
   /* ── Telas ──────────────────────────────────────────────────────────── */
@@ -151,6 +157,7 @@
     border: none; border-radius: 10px;
     font: inherit; font-size: 16px; font-weight: 600;
     padding: 13px 22px;
+    text-decoration: none;
     cursor: pointer;
     transition: transform .1s, opacity .2s;
   }
@@ -208,7 +215,10 @@
   <div class="progress"><div class="progress-bar" id="progress"></div></div>
   <div class="brand">
     <div class="logo"><span class="moon" aria-hidden="true"></span>Digital Moon</div>
-    <div class="step-count" id="stepCount"></div>
+    <div class="brand-right">
+      <span class="preview-badge" id="previewBadge" hidden>Prévia · nada é enviado</span>
+      <div class="step-count" id="stepCount"></div>
+    </div>
   </div>
 </header>
 
@@ -348,16 +358,18 @@
 <button type="button" class="back-btn" id="backBtn">↑ Voltar</button>
 
 <script>
-// ── Supabase ──────────────────────────────────────────────────────────────────
-// Criado só no envio: se o CDN falhar, o quiz continua navegável e o erro aparece no envio.
+// ── Configuração ─────────────────────────────────────────────────────────────
+// Preencha com a URL e a publishable key do projeto Supabase (Settings → API).
+// Enquanto estiverem vazias, o quiz roda em modo prévia: nada é enviado.
+const CONFIG = {
+  supabaseUrl: '',
+  supabaseKey: ''
+};
+const PREVIEW = !CONFIG.supabaseUrl || !CONFIG.supabaseKey;
+
 let sb = null;
 function getClient() {
-  if (!sb && window.supabase) {
-    sb = window.supabase.createClient(
-      'https://pzwnvuypmwsgnoihkxzq.supabase.co',
-      'sb_publishable_ANMsNc9CpyLAfaQAxh_v0Q_7ZX__vc0'
-    );
-  }
+  if (!sb && window.supabase) sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
   return sb;
 }
 
@@ -521,8 +533,10 @@ form.addEventListener('submit', async e => {
   const payload = { ...answers, score, temperatura: temperatura(score), ...utm };
 
   btn.disabled = true; btn.textContent = 'Enviando…'; err.textContent = '';
-  const client = getClient();
-  const { error } = client
+  const client = PREVIEW ? null : getClient();
+  const { error } = PREVIEW
+    ? (console.info('[prévia] payload que seria enviado:', payload), { error: null })
+    : client
     ? await client.from('qualificacoes').insert(payload)
     : { error: new Error('supabase-js não carregou') };
   btn.disabled = false; btn.textContent = 'Enviar respostas →';
@@ -537,6 +551,7 @@ form.addEventListener('submit', async e => {
   go(current + 1);
 });
 
+document.getElementById('previewBadge').hidden = !PREVIEW;
 updateChrome();
 </script>
 </body>
